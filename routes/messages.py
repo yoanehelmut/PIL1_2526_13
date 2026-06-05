@@ -56,4 +56,4 @@ def nouvelle_conversation():
     conn.commit()
     cur.close()
     conn.close()
-    return jsonify({"conversation_id": conv_id}))=
+    return jsonify({"conversation_id": conv_id})
