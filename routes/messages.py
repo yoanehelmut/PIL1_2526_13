@@ -37,7 +37,7 @@ def get_messages(conv_id):
     conn.close()
     return jsonify(msgs)
 
-@messages_bp.route("/conversation/nouvelle", methods=["POST"])
+@messages_bp.route("/conversation/nouvelle", methods=["POST"]
 def nouvelle_conversation():
     if "user_id" not in session:
         return jsonify({"error": "Non connecte"}), 401
@@ -56,4 +56,4 @@ def nouvelle_conversation():
     conn.commit()
     cur.close()
     conn.close()
-    return jsonify({"conversation_id": conv_id})
+    return jsonify({"conversation_id": conv_id}))=
