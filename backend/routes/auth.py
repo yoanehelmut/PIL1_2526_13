@@ -1,485 +1,179 @@
-import os
 import re
-import logging
-from functools import wraps
+from flask import Blueprint, request, jsonify, session
+from werkzeug.security import generate_password_hash, check_password_hash
+from contextlib import contextmanager
+from config.database import get_db_connection
 
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    session,
-    flash
-)
-
-import pymysql
-from werkzeug.security import (
-    generate_password_hash,
-    check_password_hash
-)
-
-# ─────────────────────────────────────────────
-# Configuration Flask
-# ─────────────────────────────────────────────
-
-app = Flask(__name__)
-
-SECRET_KEY = os.environ.get("SECRET_KEY")
-
-if not SECRET_KEY:
-    raise RuntimeError(
-        "La variable d'environnement SECRET_KEY doit être définie."
-    )
-
-app.secret_key = SECRET_KEY
-
-app.config.update(
-    SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=os.environ.get(
-        "FLASK_ENV"
-    ) == "production"
-)
-
-logging.basicConfig(level=logging.INFO)
+# ─────────────────────────────
+# Blueprint
+# ─────────────────────────────
+auth_bp = Blueprint("auth", __name__)
 
 EMAIL_REGEX = r"^[\w\.-]+@[\w\.-]+\.\w+$"
+ROLES_AUTORISÉS = {"student", "teacher"}
+MIN_PASSWORD_LENGTH = 8
+MAX_NAME_LENGTH = 100
+MAX_EMAIL_LENGTH = 255
 
 
-# ─────────────────────────────────────────────
-# Base de données
-# ─────────────────────────────────────────────
+# ─────────────────────────────
+# CONTEXT MANAGER DB
+# ─────────────────────────────
+@contextmanager
+def get_db():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        yield conn, cur
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cur.close()
+        conn.close()
 
-def get_db_connection():
-    return pymysql.connect(
-        host=os.environ.get("DB_HOST", "localhost"),
-        user=os.environ.get("DB_USER", "root"),
-        password=os.environ.get("DB_PASSWORD", ""),
-        database=os.environ.get("DB_NAME", "mentorlink_db"),
-        charset="utf8mb4",
-        cursorclass=pymysql.cursors.DictCursor,
-        autocommit=False
-    )
 
-
-# ─────────────────────────────────────────────
-# Validation
-# ─────────────────────────────────────────────
-
+# ─────────────────────────────
+# VALIDATION
+# ─────────────────────────────
 def is_valid_email(email):
-    return re.match(EMAIL_REGEX, email)
-
-
-def is_valid_phone(phone):
-    return phone.isdigit() and len(phone) >= 8
-
-
-# ─────────────────────────────────────────────
-# Décorateur connexion
-# ─────────────────────────────────────────────
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-
-        if "user_id" not in session:
-            flash(
-                "Veuillez vous connecter.",
-                "warning"
-            )
-            return redirect(
-                url_for(
-                    "connexion",
-                    next=request.url
-                )
-            )
-
-        return f(*args, **kwargs)
-
-    return decorated_function
-
-
-# ─────────────────────────────────────────────
-# Accueil
-# ─────────────────────────────────────────────
-
-@app.route("/")
-def index():
-    return redirect(url_for("connexion"))
-
-
-# ─────────────────────────────────────────────
-# Inscription
-# ─────────────────────────────────────────────
-
-@app.route("/inscription", methods=["GET", "POST"])
-def inscription():
-
-    if request.method == "POST":
-
-        nom = request.form.get("nom", "").strip()
-        prenom = request.form.get("prenom", "").strip()
-        telephone = request.form.get("telephone", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("mot_de_passe", "")
-        filiere = request.form.get("filiere", "").strip()
-        niveau = request.form.get("niveau_etudes", "").strip()
-
-        if not all([
-            nom,
-            prenom,
-            telephone,
-            email,
-            password,
-            filiere,
-            niveau
-        ]):
-            flash(
-                "Tous les champs sont obligatoires.",
-                "danger"
-            )
-            return redirect(url_for("inscription"))
-
-        if not is_valid_email(email):
-            flash(
-                "Adresse email invalide.",
-                "danger"
-            )
-            return redirect(url_for("inscription"))
-
-        if not is_valid_phone(telephone):
-            flash(
-                "Numéro de téléphone invalide.",
-                "danger"
-            )
-            return redirect(url_for("inscription"))
-
-        hashed_password = generate_password_hash(password)
-
-        conn = None
-
-        try:
-            conn = get_db_connection()
-
-            with conn.cursor() as cursor:
-
-                cursor.execute(
-                    """
-                    SELECT id
-                    FROM utilisateurs
-                    WHERE email = %s
-                    OR telephone = %s
-                    """,
-                    (email, telephone)
-                )
-
-                if cursor.fetchone():
-                    flash(
-                        "Email ou téléphone déjà utilisé.",
-                        "danger"
-                    )
-                    return redirect(url_for("inscription"))
-
-                cursor.execute(
-                    """
-                    INSERT INTO utilisateurs
-                    (
-                        nom,
-                        prenom,
-                        telephone,
-                        email,
-                        mot_de_passe,
-                        filiere,
-                        niveau_etudes
-                    )
-                    VALUES
-                    (%s,%s,%s,%s,%s,%s,%s)
-                    """,
-                    (
-                        nom,
-                        prenom,
-                        telephone,
-                        email,
-                        hashed_password,
-                        filiere,
-                        niveau
-                    )
-                )
-
-                conn.commit()
-
-            flash(
-                "Inscription réussie.",
-                "success"
-            )
-
-            return redirect(url_for("connexion"))
-
-        except Exception as e:
-
-            if conn:
-                conn.rollback()
-
-            app.logger.exception(e)
-
-            flash(
-                "Erreur lors de l'inscription.",
-                "danger"
-            )
-
-        finally:
-
-            if conn:
-                conn.close()
-
-    return render_template("inscription.html")
-
-
-# ─────────────────────────────────────────────
-# Connexion
-# ─────────────────────────────────────────────
-
-@app.route("/connexion", methods=["GET", "POST"])
-def connexion():
-
-    if request.method == "POST":
-
-        identifiant = request.form.get(
-            "identifiant",
-            ""
-        ).strip()
-
-        password = request.form.get(
-            "mot_de_passe",
-            ""
-        )
-
-        if not identifiant or not password:
-            flash(
-                "Veuillez remplir tous les champs.",
-                "danger"
-            )
-            return redirect(url_for("connexion"))
-
-        if "@" in identifiant:
-            identifiant = identifiant.lower()
-
-        conn = None
-
-        try:
-
-            conn = get_db_connection()
-
-            with conn.cursor() as cursor:
-
-                cursor.execute(
-                    """
-                    SELECT *
-                    FROM utilisateurs
-                    WHERE email = %s
-                    OR telephone = %s
-                    """,
-                    (identifiant, identifiant)
-                )
-
-                user = cursor.fetchone()
-
-            if user and check_password_hash(
-                user["mot_de_passe"],
-                password
-            ):
-
-                session["user_id"] = user["id"]
-                session["user_nom"] = (
-                    f"{user['prenom']} {user['nom']}"
-                )
-
-                flash(
-                    f"Bienvenue {user['prenom']} !",
-                    "success"
-                )
-
-                next_page = request.args.get("next")
-
-                return redirect(
-                    next_page or url_for("profil")
-                )
-
-            flash(
-                "Identifiant ou mot de passe incorrect.",
-                "danger"
-            )
-
-        except Exception as e:
-
-            app.logger.exception(e)
-
-            flash(
-                "Erreur lors de la connexion.",
-                "danger"
-            )
-
-        finally:
-
-            if conn:
-                conn.close()
-
-    return render_template("connexion.html")
-
-
-# ─────────────────────────────────────────────
-# Profil
-# ─────────────────────────────────────────────
-
-@app.route("/profil", methods=["GET", "POST"])
-@login_required
-def profil():
-
-    user_id = session["user_id"]
-
-    conn = None
+    return bool(re.match(EMAIL_REGEX, email))
+
+def validate_register_data(data):
+    if not isinstance(data, dict):
+        return "JSON invalide: data n'est pas un objet", 400
+
+    name = data.get("name", "").strip()
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
+    role = data.get("role", "student")
+
+    if not name or not email or not password:
+        return "Champs manquants", 400
+
+    if len(name) > MAX_NAME_LENGTH:
+        return f"Nom trop long (max {MAX_NAME_LENGTH} caractères)", 400
+
+    if len(email) > MAX_EMAIL_LENGTH or not is_valid_email(email):
+        return "Email invalide", 400
+
+    if len(password) < MIN_PASSWORD_LENGTH:
+        return f"Mot de passe trop court (min {MIN_PASSWORD_LENGTH} caractères)", 400
+
+    if role not in ROLES_AUTORISÉS:
+        return f"Rôle invalide. Valeurs acceptées : {', '.join(ROLES_AUTORISÉS)}", 400
+
+    return None, None
+
+
+# ─────────────────────────────
+# REGISTER
+# ─────────────────────────────
+@auth_bp.route("/register", methods=["POST"])
+def register():
+    data = request.get__json(force=True,silent=False)
+    print("HEADERS:", request.headers)
+    print("RAW:", request.data)
+    print("JSON:", data)
+    print("TYPE:", type(data))
+    if not isinstance (data, dict):
+        return jsonify({"message": "Corps de requête JSON invalide"}), 400
+
+    error, status = validate_register_data(data)
+    if error:
+        return jsonify({"message": error}), status
+
+    name     = data["name"].strip()
+    email    = data["email"].strip().lower()
+    password = data["password"]
+    role     = data.get("role", "student")
 
     try:
+        with get_db() as (conn, cur):
+            cur.execute("SELECT id FROM users WHERE email = %s", (email,))
+            if cur.fetchone():
+                return jsonify({"message": "Email déjà utilisé"}), 409
 
-        conn = get_db_connection()
-
-        with conn.cursor() as cursor:
-
-            if request.method == "POST":
-
-                cursor.execute(
-                    """
-                    UPDATE utilisateurs
-                    SET
-                        points_forts=%s,
-                        points_faibles=%s,
-                        disponibilites=%s,
-                        bio=%s
-                    WHERE id=%s
-                    """,
-                    (
-                        request.form.get(
-                            "points_forts",
-                            ""
-                        ).strip(),
-
-                        request.form.get(
-                            "points_faibles",
-                            ""
-                        ).strip(),
-
-                        request.form.get(
-                            "disponibilites",
-                            ""
-                        ).strip(),
-
-                        request.form.get(
-                            "bio",
-                            ""
-                        ).strip(),
-
-                        user_id
-                    )
-                )
-
-                conn.commit()
-
-                flash(
-                    "Profil mis à jour.",
-                    "success"
-                )
-
-                return redirect(
-                    url_for("profil")
-                )
-
-            cursor.execute(
-                """
-                SELECT *
-                FROM utilisateurs
-                WHERE id = %s
-                """,
-                (user_id,)
-            )
-
-            user = cursor.fetchone()
-
-        if not user:
-
-            session.clear()
-
-            flash(
-                "Utilisateur introuvable.",
-                "danger"
-            )
-
-            return redirect(
-                url_for("connexion")
-            )
-
-        return render_template(
-            "profil.html",
-            user=user
-        )
+            hashed_password = generate_password_hash(password)
+            cur.execute("""
+                INSERT INTO users (name, email, password_hash, role)
+                VALUES (%s, %s, %s, %s)
+            """, (name, email, hashed_password, role))
 
     except Exception as e:
+        return jsonify({"message": "Erreur serveur lors de l'inscription"}), 500
 
-        app.logger.exception(e)
-
-        flash(
-            "Une erreur est survenue.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("connexion")
-        )
-
-    finally:
-
-        if conn:
-            conn.close()
+    return jsonify({"message": "Utilisateur créé avec succès"}), 201
 
 
-# ─────────────────────────────────────────────
-# Déconnexion
-# ─────────────────────────────────────────────
+# ─────────────────────────────
+# LOGIN
+# ─────────────────────────────
+@auth_bp.route("/login", methods=["POST"])
+def login():
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"message": "Corps de requête JSON invalide"}), 400
 
-@app.route(
-    "/deconnexion",
-    methods=["POST"]
-)
-@login_required
-def deconnexion():
+    email    = data.get("email", "").strip().lower()
+    password = data.get("password", "")
 
+    if not email or not password:
+        return jsonify({"message": "Champs manquants"}), 400
+
+    try:
+        with get_db() as (conn, cur):
+            cur.execute("""
+                SELECT id, name, email, password_hash, role
+                FROM users
+                WHERE email = %s
+            """, (email,))
+            user = cur.fetchone()
+
+    except Exception:
+        return jsonify({"message": "Erreur serveur lors de la connexion"}), 500
+
+    # Message volontairement vague pour ne pas révéler si l'email existe
+    if not user or not check_password_hash(user["password_hash"], password):
+        return jsonify({"message": "Identifiants incorrects"}), 401
+
+    session.clear()  # Évite la fixation de session
+    session["user_id"]   = user["id"]
+    session["user_name"] = user["name"]
+    session["user_role"] = user["role"]
+
+    return jsonify({
+        "message": "Connexion réussie",
+        "user": {
+            "id":    user["id"],
+            "name":  user["name"],
+            "email": user["email"],
+            "role":  user["role"]
+        }
+    }), 200
+
+
+# ─────────────────────────────
+# LOGOUT
+# ─────────────────────────────
+@auth_bp.route("/logout", methods=["POST"])
+def logout():
     session.clear()
-
-    flash(
-        "Vous avez été déconnecté.",
-        "info"
-    )
-
-    return redirect(
-        url_for("connexion")
-    )
+    return jsonify({"message": "Déconnexion réussie"}), 200
 
 
-# ─────────────────────────────────────────────
-# Lancement
-# ─────────────────────────────────────────────
+# ─────────────────────────────
+# GET PROFILE
+# ─────────────────────────────
+@auth_bp.route("/me", methods=["GET"])
+def me():
+    if "user_id" not in session:
+        return jsonify({"message": "Non connecté"}), 401
 
-if __name__ == "__main__":
+    return jsonify({
+        "user_id": session["user_id"],
+        "name":    session["user_name"],
+        "role":    session["user_role"]
+    }), 200
 
-    debug_mode = (
-        os.environ.get(
-            "FLASK_DEBUG",
-            "false"
-        ).lower() == "true"
-    )
-
-    app.run(
-        host="0.0.0.0",
-        port=5000,
-        debug=debug_mode
-    )

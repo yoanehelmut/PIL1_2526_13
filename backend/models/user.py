@@ -5,7 +5,6 @@
 # ==============================================================================
 
 import mysql.connector
-from mysql.connector import Error
 from config.database import get_db_connection
 
 def get_user_by_email(email):
@@ -15,7 +14,11 @@ def get_user_by_email(email):
     """
     conn = None
     cur = None
-    query = "SELECT id, name, email, password_hash, role FROM users WHERE email = %s;"
+    query = """
+    SELECT id, name, email, password_hash, role 
+    FROM users 
+    WHERE email = %s;
+    """
     
     try:
         conn = get_db_connection()
@@ -31,6 +34,9 @@ def get_user_by_email(email):
         if conn: conn.close()
 
 def create_user(name, email, password_hash, role):
+    existing = get_user_by_email(email)
+    if existing:
+        return None
     """
     Insère un nouvel utilisateur lors de l'inscription.
     """
