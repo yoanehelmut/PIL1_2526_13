@@ -4,7 +4,7 @@ nom VARCHAR(100) NOT NULL,
 prenom VARCHAR(100) NOT NULL,
 email VARCHAR (150) UNIQUE NOT NULL,
 mot_de_passe_hash TEXT NOT NULL,
-role ENUM('Mentor','Etudiant')NOT NULL,
+role ENUM('mentor','etudiant')NOT NULL,
 filiere VARCHAR(100),
 niveau VARCHAR(50),
 reset_token VARCHAR(255)NULL,
@@ -48,7 +48,7 @@ ON DELETE CASCADE
 CREATE TABLE offres_demandes (
 id INT AUTO_INCREMENT PRIMARY KEY,
 user_id INT NOT NULL,
-type VARCHAR('offre','demande')NOT NULL,
+type ENUM ('offre','demande') NOT NULL,
 description TEXT,
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
@@ -67,7 +67,7 @@ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 FOREIGN KEY (etudiant_id)
 REFERENCES users(id)
-ON DELETE CASCADE
+ON DELETE CASCADE,
 FOREIGN KEY (mentor_id)
 REFERENCES users(id)
 ON DELETE CASCADE
@@ -92,5 +92,5 @@ ON DELETE CASCADE
 );
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
-CREATE INDEX idx_matching_score ON matching(score);
+CREATE INDEX idx_matching_score ON matchings(score);
 
