@@ -3,7 +3,6 @@ import psycopg2, os
 
 messages_bp = Blueprint("messages", __name__)
 
-
 def get_db():
     return psycopg2.connect(
         host=os.getenv("DB_HOST", "localhost"),
@@ -13,27 +12,21 @@ def get_db():
         port=os.getenv("DB_PORT", "5432")
     )
 
-
 @messages_bp.route("/messagerie")
 def messagerie():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
-
     uid = session["user_id"]
     try:
         conn = get_db()
         cur = conn.cursor()
-        # Récupère l'interlocuteur selon la position de l'utilisateur courant
         cur.execute("""
-            SELECT
-                c.id,
-                CASE WHEN c.utilisateur1_id = %s THEN u2.nom ELSE u1.nom END AS interlocuteur_nom,
-                CASE WHEN c.utilisateur1_id = %s THEN u2.id  ELSE u1.id  END AS interlocuteur_id
-            FROM conversations c
-            JOIN utilisateurs u1 ON u1.id = c.utilisateur1_id
-            JOIN utilisateurs u2 ON u2.id = c.utilisateur2_id
-            WHERE c.utilisateur1_id = %s OR c.utilisateur2_id = %s
-            ORDER BY c.date_creation DESC
+            SELECT DISTINCT
+                CASE WHEN m.expediteur_id = %s THEN m.destinataire_id ELSE m.expediteur_id END AS interlocuteur_id,
+                u.nom
+            FROM messages m
+            JOIN users u ON u.id = CASE WHEN m.expediteur_id = %s THEN m.destinataire_id ELSE m.expediteur_id END
+            WHERE m.expediteur_id = %s OR m.destinataire_id = %s
         """, (uid, uid, uid, uid))
         conversations = cur.fetchall()
     except psycopg2.Error as e:
@@ -41,25 +34,24 @@ def messagerie():
     finally:
         cur.close()
         conn.close()
-
     return render_template("messagerie.html", conversations=conversations, user=session)
 
-
-@messages_bp.route("/conversation/<int:conv_id>/messages")
-def get_messages(conv_id):
+@messages_bp.route("/conversation/<int:interlocuteur_id>/messages")
+def get_messages(interlocuteur_id):
     if "user_id" not in session:
         return jsonify({"error": "Non connecte"}), 401
-
+    uid = session["user_id"]
     try:
         conn = get_db()
         cur = conn.cursor()
         cur.execute("""
-            SELECT m.id, u.nom, m.expediteur_id, m.contenu, m.date_envoi
+            SELECT m.id, u.nom, m.expediteur_id, m.contenu, m.timestamp
             FROM messages m
-            JOIN utilisateurs u ON u.id = m.expediteur_id
-            WHERE m.conversation_id = %s
-            ORDER BY m.date_envoi ASC
-        """, (conv_id,))
+            JOIN users u ON u.id = m.expediteur_id
+            WHERE (m.expediteur_id = %s AND m.destinataire_id = %s)
+               OR (m.expediteur_id = %s AND m.destinataire_id = %s)
+            ORDER BY m.timestamp ASC
+        """, (uid, interlocuteur_id, interlocuteur_id, uid))
         msgs = [
             {"id": r[0], "expediteur": r[1], "expediteur_id": r[2], "contenu": r[3], "date": str(r[4])}
             for r in cur.fetchall()
@@ -69,43 +61,27 @@ def get_messages(conv_id):
     finally:
         cur.close()
         conn.close()
-
     return jsonify(msgs)
 
-
-@messages_bp.route("/conversation/nouvelle", methods=["POST"])
-def nouvelle_conversation():
+@messages_bp.route("/message/envoyer", methods=["POST"])
+def envoyer_message():
     if "user_id" not in session:
         return jsonify({"error": "Non connecte"}), 401
-
     data = request.get_json()
-    if not data or "interlocuteur_id" not in data:
-        return jsonify({"error": "interlocuteur_id manquant"}), 400
-
-    interlocuteur_id = data["interlocuteur_id"]
+    if not data or "destinataire_id" not in data or "contenu" not in data:
+        return jsonify({"error": "Données manquantes"}), 400s
+    destinataire_id = data["destinataire_id"]
     uid = session["user_id"]
-
-    if uid == interlocuteur_id:
-        return jsonify({"error": "Impossible de démarrer une conversation avec soi-même"}), 400
-
+    if uid == destinataire_id:
+        return jsonify({"error": "Impossible d'envoyer un message à soi-même"}), 400
     try:
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("""
-            SELECT id FROM conversations
-            WHERE (utilisateur1_id = %s AND utilisateur2_id = %s)
-               OR (utilisateur1_id = %s AND utilisateur2_id = %s)
-        """, (uid, interlocuteur_id, interlocuteur_id, uid))
-        existing = cur.fetchone()
-
-        if existing:
-            return jsonify({"conversation_id": existing[0]})
-
         cur.execute(
-            "INSERT INTO conversations (utilisateur1_id, utilisateur2_id) VALUES (%s, %s) RETURNING id",
-            (uid, interlocuteur_id)
+            "INSERT INTO messages (expediteur_id, destinataire_id, contenu) VALUES (%s, %s, %s) RETURNING id, timestamp",
+            (uid, destinataire_id, data["contenu"])
         )
-        conv_id = cur.fetchone()[0]
+        row = cur.fetchone()
         conn.commit()
     except psycopg2.Error as e:
         conn.rollback()
@@ -113,5 +89,4 @@ def nouvelle_conversation():
     finally:
         cur.close()
         conn.close()
-
-    return jsonify({"conversation_id": conv_id})
+    return jsonify({"id": row[0], "timestamp": str(row[1])})
