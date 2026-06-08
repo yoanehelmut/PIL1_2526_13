@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Offres - MentorLink</title>
+    <link rel="stylesheet" href="../static/css/style .css">
+    <style>
+        .offres-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #1a1a2e;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+            background: #e9ecef;
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 24px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tab {
+            padding: 9px 24px;
+            border: none;
+            background: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-family: Arial;
+            color: #555;
+            transition: all 0.2s;
+            width: auto;
+        }
+
+        .tab.active {
+            background: white;
+            color: #0d6efd;
+            font-weight: bold;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Formulaire publier */
+        .publier-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 28px;
+        }
+
+        .publier-card h3 {
+            margin: 0 0 20px;
+            color: #1a1a2e;
+            font-size: 1.1rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: Arial;
+            box-sizing: border-box;
+            width: 100%;
+            margin: 0;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #0d6efd;
+            outline: none;
+        }
+
+        .publier-btn {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 11px 28px;
+            border-radius: 9px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-top: 4px;
+            width: auto;
+            transition: background 0.2s;
+        }
+
+        .publier-btn:hover { background: #0b5ed7; }
+
+        /* Filtres recherche */
+        .filtres-bar {
+            background: white;
+            border-radius: 14px;
+            padding: 18px 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filtres-bar .form-group { flex: 1; min-width: 140px; }
+
+        .filtres-bar button {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            width: auto;
+            align-self: flex-end;
+        }
+
+        /* Liste offres */
+        .offre-card {
+            background: white;
+            border-radius: 14px;
+            padding: 20px 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            transition: transform 0.2s;
+        }
+
+        .offre-card:hover { transform: translateY(-2px); }
+
+        .offre-left { flex: 1; }
+
+        .offre-left h4 {
+            margin: 0 0 6px;
+            font-size: 1rem;
+            color: #1a1a2e;
+        }
+
+        .offre-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            border-radius: 12px;
+            padding: 3px 10px;
+            font-size: 0.78rem;
+            font-weight: bold;
+        }
+
+        .badge-offre { background: #d4edda; color: #155724; }
+        .badge-demande { background: #fff3cd; color: #856404; }
+        .badge-format { background: #e7f0ff; color: #0d6efd; }
+        .badge-matiere { background: #f0f0f0; color: #444; }
+
+        .offre-dispo {
+            font-size: 0.83rem;
+            color: #666;
+        }
+
+        .offre-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .offre-auteur {
+            font-size: 0.82rem;
+            color: #888;
+            text-align: right;
+        }
+
+        .repondre-btn {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            width: auto;
+            transition: background 0.2s;
+        }
+
+        .repondre-btn:hover { background: #0b5ed7; }
+
+        .success-msg {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .section-hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <h1 class="logo">MentorLink🎓</h1>
+    <div style="margin-top:15px">
+        <a class="btn" href="../templates/profile.html">Mon Profil</a>
+        <a class="btn" href="../templates/matching.html">Matching</a>
+        <a class="btn" href="../templates/chat.html">Messages</a>
+    </div>
+</nav>
+
+<div class="offres-container">
+    <h2 class="page-title">📋 Offres & Demandes de mentorat</h2>
+    <p class="page-subtitle">Publiez ou recherchez des offres de mentorat</p>
+
+    <!-- Onglets -->
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('parcourir', this)">🔍 Parcourir</button>
+        <button class="tab" onclick="switchTab('publier', this)">✏️ Publier</button>
+    </div>
+
+    <!-- Section Parcourir -->
+    <div id="section-parcourir">
+        <div class="filtres-bar">
+            <div class="form-group">
+                <label>Matière</label>
+                <input type="text" id="filtreMatiere" placeholder="Ex: Python, SQL...">
+            </div>
+            <div class="form-group">
+                <label>Type</label>
+                <select id="filtreType">
+                    <option value="">Tous</option>
+                    <option value="offre">Offres</option>
+                    <option value="demande">Demandes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Format</label>
+                <select id="filtreFormat">
+                    <option value="">Tous</option>
+                    <option value="Présentiel">Présentiel</option>
+                    <option value="En ligne">En ligne</option>
+                    <option value="Les deux">Les deux</option>
+                </select>
+            </div>
+            <button onclick="filtrerOffres()">🔍 Filtrer</button>
+        </div>
+
+        <div id="listeOffres"></div>
+    </div>
+
+    <!-- Section Publier -->
+    <div id="section-publier" class="section-hidden">
+        <div class="publier-card">
+            <h3>📝 Nouvelle publication</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Type de publication</label>
+                    <select id="pubType">
+                        <option value="offre">Offre de mentorat (je propose)</option>
+                        <option value="demande">Demande de mentorat (je cherche)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Matière / Compétence</label>
+                    <input type="text" id="pubMatiere" placeholder="Ex: Algorithmique, Python...">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Format</label>
+                    <select id="pubFormat">
+                        <option>Présentiel</option>
+                        <option>En ligne</option>
+                        <option>Les deux</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Disponibilités</label>
+                    <input type="text" id="pubDispo" placeholder="Ex: Lun, Mer · 14h-18h">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="pubDesc" rows="3" placeholder="Décrivez votre offre ou demande en détail..."></textarea>
+            </div>
+            <button class="publier-btn" onclick="publier()">🚀 Publier</button>
+            <div class="success-msg" id="pubSuccess">✅ Publication ajoutée avec succès !</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let offres = [
+        { type: "offre", matiere: "Python", format: "En ligne", dispo: "Lun, Mer · 14h-17h", auteur: "Kofi M.", desc: "Je propose des sessions de Python pour débutants et intermédiaires." },
+        { type: "demande", matiere: "Base de données", format: "Présentiel", dispo: "Mar, Jeu · 10h-12h", auteur: "Fatou D.", desc: "Je cherche un mentor pour m'aider avec SQL et la modélisation." },
+        { type: "offre", matiere: "Algorithmique", format: "Les deux", dispo: "Ven · 16h-18h", auteur: "Brice H.", desc: "Aide en algorithmique et structures de données niveau L1/L2." },
+        { type: "demande", matiere: "JavaScript", format: "En ligne", dispo: "Sam · 9h-12h", auteur: "Aïcha T.", desc: "Je débute en JS et cherche un mentor pour les bases." },
+    ];
+
+    function renderOffres(liste) {
+        const container = document.getElementById('listeOffres');
+        container.innerHTML = '';
+        if (liste.length === 0) {
+            container.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px">😕 Aucune offre trouvée.</p>';
+            return;
+        }
+        liste.forEach((o, i) => {
+            const div = document.createElement('div');
+            div.className = 'offre-card';
+            div.innerHTML = `
+                <div class="offre-left">
+                    <h4>${o.matiere}</h4>
+                    <div class="offre-meta">
+                        <span class="badge ${o.type === 'offre' ? 'badge-offre' : 'badge-demande'}">${o.type === 'offre' ? '✅ Offre' : '🙋 Demande'}</span>
+                        <span class="badge badge-format">📍 ${o.format}</span>
+                        <span class="badge badge-matiere">📚 ${o.matiere}</span>
+                    </div>
+                    <div class="offre-dispo">🕐 ${o.dispo}</div>
+                    <div style="font-size:0.85rem;color:#555;margin-top:6px">${o.desc}</div>
+                </div>
+                <div class="offre-right">
+                    <div class="offre-auteur">👤 ${o.auteur}</div>
+                    <button class="repondre-btn" onclick="window.location.href='messagerie.html'">💬 Répondre</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function filtrerOffres() {
+        const matiere = document.getElementById('filtreMatiere').value.toLowerCase();
+        const type = document.getElementById('filtreType').value;
+        const format = document.getElementById('filtreFormat').value;
+
+        const result = offres.filter(o => {
+            return (!matiere || o.matiere.toLowerCase().includes(matiere))
+                && (!type || o.type === type)
+                && (!format || o.format === format);
+        });
+        renderOffres(result);
+    }
+
+    function publier() {
+        const type = document.getElementById('pubType').value;
+        const matiere = document.getElementById('pubMatiere').value.trim();
+        const format = document.getElementById('pubFormat').value;
+        const dispo = document.getElementById('pubDispo').value.trim();
+        const desc = document.getElementById('pubDesc').value.trim();
+
+        if (!matiere) { alert('Veuillez indiquer une matière.'); return; }
+
+        offres.unshift({ type, matiere, format, dispo: dispo || 'Non précisé', auteur: 'Moi', desc: desc || '' });
+
+        document.getElementById('pubMatiere').value = '';
+        document.getElementById('pubDispo').value = '';
+        document.getElementById('pubDesc').value = '';
+
+        const msg = document.getElementById('pubSuccess');
+        msg.style.display = 'block';
+        setTimeout(() => msg.style.display = 'none', 3000);
+
+        switchTab('parcourir', document.querySelector('.tab'));
+        renderOffres(offres);
+    }
+
+    function switchTab(tab, btn) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('section-parcourir').style.display = tab === 'parcourir' ? 'block' : 'none';
+        document.getElementById('section-publier').style.display = tab === 'publier' ? 'block' : 'none';
+    }
+
+    renderOffres(offres);
+</script>
+</body>
+</html>

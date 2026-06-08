@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Profil - MentorLink</title>
+    <link rel="stylesheet" href="../static/css/style .css">
+    <style>
+        .profil-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .profil-header {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+
+        .photo-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0;
+        }
+
+        .photo-wrapper img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #0d6efd;
+        }
+
+        .photo-placeholder {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            border: 3px solid #0d6efd;
+        }
+
+        .photo-edit-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profil-info h2 {
+            margin: 0 0 6px;
+            font-size: 1.5rem;
+            color: #1a1a2e;
+        }
+
+        .profil-info p {
+            margin: 0;
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .badge-filiere {
+            display: inline-block;
+            background: #e7f0ff;
+            color: #0d6efd;
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .section-card h3 {
+            margin: 0 0 18px;
+            font-size: 1.1rem;
+            color: #1a1a2e;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: Arial;
+            box-sizing: border-box;
+            margin: 0;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #0d6efd;
+            outline: none;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background: #e7f0ff;
+            color: #0d6efd;
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tag.rouge {
+            background: #fde8e8;
+            color: #dc3545;
+        }
+
+        .tag span.close {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tag-input-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .tag-input-row input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: Arial;
+            margin: 0;
+            width: auto;
+        }
+
+        .tag-input-row button {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            width: auto;
+        }
+
+        .disponibilites-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .dispo-day {
+            text-align: center;
+        }
+
+        .dispo-day label {
+            display: block;
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .dispo-day input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin: 0;
+            padding: 0;
+        }
+
+        .save-btn {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .save-btn:hover { background: #0b5ed7; }
+
+        .success-msg {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <h1 class="logo">MentorLink🎓</h1>
+    <div style="margin-top:15px">
+        <a class="btn" href="../templates/offers.html">Offres</a>
+        <a class="btn" href="../templates/matching.html">Matching</a>
+        <a class="btn" href="../templates/chat.html">Messages</a>
+    </div>
+</nav>
+
+<div class="profil-container">
+
+    <!-- En-tête profil -->
+    <div class="profil-header">
+        <div class="photo-wrapper">
+            <div class="photo-placeholder">👤</div>
+            <button class="photo-edit-btn" onclick="document.getElementById('photoInput').click()">✏️</button>
+            <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="previewPhoto(event)">
+        </div>
+        <div class="profil-info">
+            <h2 id="displayNom">Nom Prénom</h2>
+            <p id="displayEmail">email@etudiant.ifri.com</p>
+            <span class="badge-filiere" id="displayFiliere">Filière</span>
+        </div>
+    </div>
+
+    <!-- Infos personnelles -->
+    <div class="section-card">
+        <h3>📋 Informations personnelles</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Nom</label>
+                <input type="text" id="nom" placeholder="Votre nom" oninput="updateDisplay()">
+            </div>
+            <div class="form-group">
+                <label>Prénom</label>
+                <input type="text" id="prenom" placeholder="Votre prénom" oninput="updateDisplay()">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="email@exemple.com" oninput="updateDisplay()">
+            </div>
+            <div class="form-group">
+                <label>Téléphone</label>
+                <input type="tel" id="telephone" placeholder="+229 XX XX XX XX">
+            </div>
+            <div class="form-group">
+                <label>Filière</label>
+                <select id="filiere" onchange="updateDisplay()">
+                    <option value="">-- Choisir --</option>
+                    <option>IA</option>
+                    <option>IM</option>
+                    <option>GL</option>
+                    <option>SE&IoT</option>
+                    <option>SI</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Niveau</label>
+                <select id="niveau">
+                    <option value="">-- Choisir --</option>
+                    <option>Licence 1</option>
+                    <option>Licence 2</option>
+                    <option>Licence 3</option>
+                    <option>Master 1</option>
+                    <option>Master 2</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group" style="margin-top:16px">
+            <label>Bio courte</label>
+            <textarea id="bio" rows="3" placeholder="Parlez un peu de vous, vos centres d'intérêt académiques..."></textarea>
+        </div>
+    </div>
+
+    <!-- Points forts -->
+    <div class="section-card">
+        <h3>💪 Points forts (compétences)</h3>
+        <div class="tags-container" id="tagsForts"></div>
+        <div class="tag-input-row">
+            <input type="text" id="inputFort" placeholder="Ex: Algorithmique, Python...">
+            <button onclick="ajouterTag('fort')">+ Ajouter</button>
+        </div>
+    </div>
+
+    <!-- Points faibles -->
+    <div class="section-card">
+        <h3>📚 Points faibles (besoin d'aide)</h3>
+        <div class="tags-container" id="tagsFaibles"></div>
+        <div class="tag-input-row">
+            <input type="text" id="inputFaible" placeholder="Ex: Base de données, Réseau...">
+            <button onclick="ajouterTag('faible')">+ Ajouter</button>
+        </div>
+    </div>
+
+    <!-- Disponibilités -->
+    <div class="section-card">
+        <h3>🕐 Disponibilités</h3>
+        <div class="disponibilites-grid">
+            <div class="dispo-day"><label>Lun</label><input type="checkbox" id="lun"></div>
+            <div class="dispo-day"><label>Mar</label><input type="checkbox" id="mar"></div>
+            <div class="dispo-day"><label>Mer</label><input type="checkbox" id="mer"></div>
+            <div class="dispo-day"><label>Jeu</label><input type="checkbox" id="jeu"></div>
+            <div class="dispo-day"><label>Ven</label><input type="checkbox" id="ven"></div>
+            <div class="dispo-day"><label>Sam</label><input type="checkbox" id="sam"></div>
+            <div class="dispo-day"><label>Dim</label><input type="checkbox" id="dim"></div>
+        </div>
+        <div class="form-row" style="margin-top:16px">
+            <div class="form-group">
+                <label>Heure début</label>
+                <input type="time" id="heureDebut">
+            </div>
+            <div class="form-group">
+                <label>Heure fin</label>
+                <input type="time" id="heureFin">
+            </div>
+        </div>
+    </div>
+
+    <button class="save-btn" onclick="sauvegarder()">💾 Sauvegarder le profil</button>
+    <div class="success-msg" id="successMsg">✅ Profil mis à jour avec succès !</div>
+
+</div>
+
+<script>
+    function updateDisplay() {
+        const nom = document.getElementById('nom').value;
+        const prenom = document.getElementById('prenom').value;
+        const email = document.getElementById('email').value;
+        const filiere = document.getElementById('filiere').value;
+        if (nom || prenom) document.getElementById('displayNom').textContent = prenom + ' ' + nom;
+        if (email) document.getElementById('displayEmail').textContent = email;
+        if (filiere) document.getElementById('displayFiliere').textContent = filiere;
+    }
+
+    function ajouterTag(type) {
+        const inputId = type === 'fort' ? 'inputFort' : 'inputFaible';
+        const containerId = type === 'fort' ? 'tagsForts' : 'tagsFaibles';
+        const input = document.getElementById(inputId);
+        const val = input.value.trim();
+        if (!val) return;
+
+        const container = document.getElementById(containerId);
+        const tag = document.createElement('div');
+        tag.className = 'tag' + (type === 'faible' ? ' rouge' : '');
+        tag.innerHTML = val + ' <span class="close" onclick="this.parentElement.remove()">×</span>';
+        container.appendChild(tag);
+        input.value = '';
+    }
+
+    document.getElementById('inputFort').addEventListener('keypress', e => { if(e.key==='Enter') ajouterTag('fort'); });
+    document.getElementById('inputFaible').addEventListener('keypress', e => { if(e.key==='Enter') ajouterTag('faible'); });
+
+    function previewPhoto(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const wrapper = document.querySelector('.photo-wrapper');
+            wrapper.querySelector('.photo-placeholder').style.display = 'none';
+            let img = wrapper.querySelector('img.preview');
+            if (!img) { img = document.createElement('img'); img.className = 'preview'; wrapper.insertBefore(img, wrapper.firstChild); }
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function sauvegarder() {
+        const msg = document.getElementById('successMsg');
+        msg.style.display = 'block';
+        setTimeout(() => msg.style.display = 'none', 3000);
+    }
+</script>
+</body>
+</html>
