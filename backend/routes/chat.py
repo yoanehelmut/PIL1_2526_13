@@ -4,21 +4,15 @@ from flask import request
 from flask_login import current_user
 from flask_socketio import emit, join_room, leave_room
 
-# Importation de l'instance socketio et de la base de données
-# from extensions import socketio, db
-# from models.message import Message
+from models.message import sauvegarder_message
+from models.match import get_matching_by_users  # ← nouveau
 
 
 def init_chat_events(socketio):
 
-    # -------------------------------------------------------------------------
-    # Connexion / Déconnexion
-    # -------------------------------------------------------------------------
-
     @socketio.on('connect')
     def handle_connect():
         if not current_user.is_authenticated:
-            # Refuse la connexion si l'utilisateur n'est pas authentifié
             return False
         print(f"[CONNECT] Utilisateur {current_user.id} connecté (SID: {request.sid})")
 
@@ -34,22 +28,33 @@ def init_chat_events(socketio):
     @socketio.on('join_chat')
     def handle_join_chat(data):
         """
-        Permet à un utilisateur authentifié de rejoindre la room privée
-        partagée avec un contact.
-        Reçoit : contact_id
+        Reçoit : conversation_id, contact_id
+        Vérifie que les deux utilisateurs ont un matching accepté.
         """
         if not current_user.is_authenticated:
             emit('error', {'message': 'Non authentifié'})
             return
 
+        conversation_id = data.get('conversation_id')
         contact_id = data.get('contact_id')
 
-        if not contact_id:
-            emit('error', {'message': 'contact_id manquant'})
+        if not conversation_id or not contact_id:
+            emit('error', {'message': 'conversation_id et contact_id sont obligatoires'})
             return
 
-        # On trie les IDs pour garantir un nom de room identique des deux côtés.
-        room_name = _build_room_name(current_user.id, contact_id)
+        # Vérification d'autorisation via match.py
+        # On teste les deux sens : current_user peut être étudiant OU mentor
+        match = (
+            get_matching_by_users(current_user.id, contact_id) or
+            get_matching_by_users(contact_id, current_user.id)
+        )
+
+        if not match:
+            emit('error', {'message': 'Accès refusé : aucun matching actif avec cet utilisateur'})
+            print(f"[SECURITY] user:{current_user.id} a tenté de rejoindre conv:{conversation_id} sans matching valide")
+            return
+
+        room_name = _build_room_name(conversation_id)
         join_room(room_name)
         print(f"[JOIN] Utilisateur {current_user.id} a rejoint la room : {room_name}")
 
@@ -60,20 +65,19 @@ def init_chat_events(socketio):
     @socketio.on('leave_chat')
     def handle_leave_chat(data):
         """
-        Permet à un utilisateur de quitter proprement la room d'une discussion.
-        Reçoit : contact_id
+        Reçoit : conversation_id
         """
         if not current_user.is_authenticated:
             emit('error', {'message': 'Non authentifié'})
             return
 
-        contact_id = data.get('contact_id')
+        conversation_id = data.get('conversation_id')
 
-        if not contact_id:
-            emit('error', {'message': 'contact_id manquant'})
+        if not conversation_id:
+            emit('error', {'message': 'conversation_id manquant'})
             return
 
-        room_name = _build_room_name(current_user.id, contact_id)
+        room_name = _build_room_name(conversation_id)
         leave_room(room_name)
         print(f"[LEAVE] Utilisateur {current_user.id} a quitté la room : {room_name}")
 
@@ -84,58 +88,62 @@ def init_chat_events(socketio):
     @socketio.on('send_message')
     def handle_send_message(data):
         """
-        Gère l'envoi d'un message en temps réel.
-        Reçoit : receiver_id, content
-        L'expéditeur est déterminé côté serveur via current_user (sécurité).
+        Reçoit : conversation_id, contact_id, content
+        Vérifie le matching avant toute sauvegarde.
         """
         if not current_user.is_authenticated:
             emit('error', {'message': 'Non authentifié'})
             return
 
-        receiver_id = data.get('receiver_id')
+        conversation_id = data.get('conversation_id')
+        contact_id = data.get('contact_id')
         content = data.get('content', '').strip()
 
-        if not receiver_id or not content:
-            emit('error', {'message': 'receiver_id et content sont obligatoires'})
+        if not conversation_id or not contact_id or not content:
+            emit('error', {'message': 'conversation_id, contact_id et content sont obligatoires'})
             return
 
-        sender_id = current_user.id  # Source fiable : jamais le client
-        timestamp = datetime.now(timezone.utc).isoformat()
+        sender_id = current_user.id
 
-        # 1. Sauvegarde du message en base de données
+        # Vérification d'autorisation avant sauvegarde
+        match = (
+            get_matching_by_users(sender_id, contact_id) or
+            get_matching_by_users(contact_id, sender_id)
+        )
+
+        if not match:
+            emit('error', {'message': 'Accès refusé : aucun matching actif'})
+            print(f"[SECURITY] user:{sender_id} a tenté d'envoyer un message sans matching valide")
+            return
+
+        # Sauvegarde en base
         try:
-            pass  # Décommenter ci-dessous pour activer la persistance :
-            # new_msg = Message(
-            #     sender_id=sender_id,
-            #     receiver_id=receiver_id,
-            #     content=content,
-            #     timestamp=timestamp,
-            # )
-            # db.session.add(new_msg)
-            # db.session.commit()
+            result = sauvegarder_message(conversation_id, sender_id, content)
+            msg_id = result["id"]
         except Exception as e:
             print(f"[ERROR] Sauvegarde BDD : {e}")
             emit('error', {'message': 'Erreur lors de la sauvegarde du message'})
             return
 
-        # 2. Diffusion du message dans la room concernée
-        room_name = _build_room_name(sender_id, receiver_id)
+        timestamp = datetime.now(timezone.utc).isoformat()
+        room_name = _build_room_name(conversation_id)
 
         message_payload = {
+            'id': msg_id,
+            'conversation_id': conversation_id,
             'sender_id': sender_id,
-            'receiver_id': receiver_id,
             'content': content,
-            'timestamp': timestamp,   # ISO 8601 UTC — exploitable directement côté client
+            'timestamp': timestamp,
         }
 
         emit('receive_message', message_payload, to=room_name)
-        print(f"[MSG] {sender_id} → {receiver_id} dans {room_name} : {content[:50]}")
+        emit('message_sent', {'status': 'ok', 'id': msg_id, 'timestamp': timestamp}, to=request.sid)
+        print(f"[MSG] user:{sender_id} → conv:{conversation_id} | {content[:50]}")
 
 
 # -----------------------------------------------------------------------------
 # Utilitaire
 # -----------------------------------------------------------------------------
 
-def _build_room_name(user_id_a, user_id_b) -> str:
-    """Construit un nom de room déterministe et symétrique pour deux utilisateurs."""
-    return f"room_{min(user_id_a, user_id_b)}_{max(user_id_a, user_id_b)}"
+def _build_room_name(conversation_id) -> str:
+    return f"room_conv_{conversation_id}"
