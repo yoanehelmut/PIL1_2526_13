@@ -1,0 +1,87 @@
+ <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>IFRI MentorLink</title>
+    <link rel="stylesheet" href="../static/css/style .css">
+</head>
+<body>
+
+<nav>
+    <h1 class="logo">MentorLink🎓</h1>
+    <div>
+        <a class="btn" href="../templates/login.html">Connexion</a>
+        <a class="btn" href="../templates/register.html">Inscription</a>
+    </div>
+</nav>
+
+<header>
+    <h1>Trouvez votre mentor à l'IFRI</h1>
+    <p>Plateforme de mise en relation entre mentors et mentorés.</p>
+    
+
+    <!-- ════ CARROUSEL ════ -->
+    <div class="slideshow-container">
+
+        <div class="slide active">
+            <img src="c:\Users\PC\.Ld9VirtualBox\Desktop\MentorLink projet\ETUD.jpg" alt="Mentors IFRI">
+            <div class="slide-caption">Des mentors expérimentés à votre écoute</div>
+        </div>
+
+        <div class="slide">
+            <img src="c:\Users\PC\.Ld9VirtualBox\Desktop\MentorLink projet\group-black-students-studying-together-260nw-2061794456.webp" alt="Séance de mentorat">
+            <div class="slide-caption">Des séances personnalisées et enrichissantes</div>
+        </div>
+
+        <div class="slide">
+            <img src="c:\Users\PC\.Ld9VirtualBox\Desktop\MentorLink projet\121332385-chapeau-noir-des-diplômés-flottant-dans-le-ciel.jpg" alt="Réussite étudiante">
+            <div class="slide-caption">Boostez votre parcours académique et professionnel</div>
+        </div>
+
+        <div class="slide">
+            <img src="c:\Users\PC\.Ld9VirtualBox\Desktop\MentorLink projet\remise-de-diplomes-a-lifri-40-1757435350.jpeg" alt="Communauté IFRI">
+            <div class="slide-caption">Rejoignez une communauté engagée à l'IFRI</div>
+        </div>
+
+        <button class="arrow left" onclick="changeSlide(-1)">&#8249;</button>
+        <button class="arrow right" onclick="changeSlide(1)">&#8250;</button>
+    </div>
+
+    <div class="dots" id="dots"></div>
+</header>
+
+<script>
+    let current = 0;
+    const slides = document.querySelectorAll('.slide');
+    const dotsContainer = document.getElementById('dots');
+    let timer;
+
+    slides.forEach((_, i) => {
+        const d = document.createElement('div');
+        d.className = 'dot' + (i === 0 ? ' active' : '');
+        d.onclick = () => goTo(i);
+        dotsContainer.appendChild(d);
+    });
+
+    function getDots() { return document.querySelectorAll('.dot'); }
+
+    function goTo(n) {
+        slides[current].classList.remove('active');
+        getDots()[current].classList.remove('active');
+        current = (n + slides.length) % slides.length;
+        slides[current].classList.add('active');
+        getDots()[current].classList.add('active');
+        resetTimer();
+    }
+
+    function changeSlide(dir) { goTo(current + dir); }
+
+    function resetTimer() {
+        clearInterval(timer);
+        timer = setInterval(() => goTo(current + 1), 3000);
+    }
+
+    resetTimer();
+</script>
+</body>
+</html>
