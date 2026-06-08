@@ -93,4 +93,3 @@ ON DELETE CASCADE
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_matching_score ON matchings(score);
-
