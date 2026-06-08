@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Messagerie – MentorLink{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:260px 1fr;height:80vh;background:#161B22;border:1px solid #30363D;border-radius:12px;overflow:hidden;">
+  
+  <!-- Liste conversations -->
+  <div style="border-right:1px solid #30363D;overflow-y:auto;">
+    <div style="padding:1rem;font-weight:700;border-bottom:1px solid #30363D;">💬 Conversations</div>
+    {% for conv in conversations %}
+    <div onclick="ouvrirChat({{ conv[0] }}, '{{ conv[1] }}')"
+         style="padding:1rem;cursor:pointer;border-bottom:1px solid #30363D;">
+      {{ conv[1] }}
+    </div>
+    {% else %}
+    <div style="padding:1rem;color:#8B949E;">Aucune conversation.</div>
+    {% endfor %}
+  </div>
+
+  <!-- Zone chat -->
+  <div style="display:flex;flex-direction:column;">
+    <div id="chat-header" style="padding:1rem;border-bottom:1px solid #30363D;font-weight:700;">
+      Sélectionne une conversation
+    </div>
+    <div id="messages-box" style="flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.5rem;"></div>
+    <div style="padding:1rem;border-top:1px solid #30363D;display:flex;gap:.5rem;">
+      <input id="msg-input" type="text" placeholder="Écrire un message..."
+             style="flex:1;background:#0D1117;border:1px solid #30363D;border-radius:8px;padding:.75rem;color:#E6EDF3;"/>
+      <button onclick="envoyerMessage()"
+              style="background:#00C896;color:#0D1117;border:none;border-radius:8px;padding:.75rem 1.2rem;font-weight:700;cursor:pointer;">
+        Envoyer
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  const socket = io();
+  const MOI = {{ session.user_id }};
+  const MON_NOM = "{{ session.prenom }} {{ session.nom }}";
+  let destActuel = null;
+
+  function ouvrirChat(destinataire_id, nom) {
+    destActuel = destinataire_id;
+    document.getElementById('chat-header').textContent = nom;
+    socket.emit('rejoindre_conversation', { destinataire_id: destinataire_id });
+    fetch(`/conversation/${destinataire_id}/messages`)
+      .then(r => r.json())
+      .then(msgs => {
+        const box = document.getElementById('messages-box');
+        box.innerHTML = '';
+        msgs.forEach(m => ajouterBulle(m.expediteur_id, m.expediteur, m.contenu, m.date));
+        box.scrollTop = box.scrollHeight;
+      });
+  }
+
+  function ajouterBulle(expediteur_id, nom, contenu, date) {
+    const mine = expediteur_id === MOI;
+    const div = document.createElement('div');
+    div.style.cssText = `max-width:60%;padding:.75rem 1rem;border-radius:12px;align-self:${mine ? 'flex-end;background:#00C896;color:#0D1117' : 'flex-start;background:#1c2128;color:#E6EDF3'}`;
+    div.textContent = contenu;
+    document.getElementById('messages-box').appendChild(div);
+    document.getElementById('messages-box').scrollTop = 99999;
+  }
+
+  function envoyerMessage() {
+    const input = document.getElementById('msg-input');
+    const contenu = input.value.trim();
+    if (!contenu || !destActuel) return;
+    socket.emit('envoyer_message', {
+      expediteur_id: MOI,
+      expediteur_nom: MON_NOM,
+      destinataire_id: destActuel,
+      contenu: contenu
+    });
+    ajouterBulle(MOI, MON_NOM, contenu, new Date());
+    input.value = '';
+  }
+
+  socket.on('nouveau_message', (data) => {
+    if (data.expediteur_id !== MOI) {
+      ajouterBulle(data.expediteur_id, data.expediteur_nom, data.contenu, data.timestamp);
+    }
+  });
+
+  document.getElementById('msg-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') envoyerMessage();
+  });
+</script>
+{% endblock %}
