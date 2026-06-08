@@ -1,68 +1,64 @@
-from flask import Flask, render_template, session, redirect, url_for
-from flask_socketio import SocketIO, emit, join_room
-from flask_bcrypt import Bcrypt
-import psycopg2, os
-from dotenv import load_dotenv
+# PROJET MENTORLINK (PIL1_2526_13)
+# Fichier : backend/models/message.py
+# Rôle : Accès base de données (Requêtes SQL) pour les messages
 
-load_dotenv()
+import pymysql
+from config.database import get_db_connection
 
-app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "mentorlink2026")
-bcrypt = Bcrypt(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
-
-def get_db():
-    return psycopg2.connect(
-        host=os.getenv("DB_HOST", "localhost"),
-        database=os.getenv("DB_NAME", "mentorlink"),
-        user=os.getenv("DB_USER", "postgres"),
-        password=os.getenv("DB_PASSWORD", ""),
-        port=os.getenv("DB_PORT", "5432")
-    )
-
-from routes.auth import auth_bp
-from routes.messages import messages_bp
-app.register_blueprint(auth_bp)
-app.register_blueprint(messages_bp)
-
-@app.route("/")
-def index():
-    if "user_id" in session:
-        return redirect(url_for("dashboard"))
-    return redirect(url_for("auth.login"))
-
-@app.route("/dashboard")
-def dashboard():
-    if "user_id" not in session:
-        return redirect(url_for("auth.login"))
-    return render_template("dashboard.html", user=session)
-
-@socketio.on("rejoindre_conversation")
-def rejoindre(data):
-    join_room(str(data["destinataire_id"]))
-
-@socketio.on("envoyer_message")
-def envoyer(data):
+def sauvegarder_message(conversation_id, expediteur_id, contenu):
+    """Insère un nouveau message dans la base de données."""
+    conn = get_db_connection()
+    cur = conn.cursor(pymysql.cursors.DictCursor)
+    
     try:
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO messages (expediteur_id, destinataire_id, contenu) VALUES (%s,%s,%s) RETURNING id, timestamp",
-            (data["expediteur_id"], data["destinataire_id"], data["contenu"])
-        )
-        row = cur.fetchone()
+        query = """
+            INSERT INTO messages (conversation_id, expediteur_id, contenu) 
+            VALUES (%s, %s, %s)
+        """
+        cur.execute(query, (conversation_id, expediteur_id, contenu))
         conn.commit()
+        
+        # Récupère l'ID du message qui vient d'être généré par MySQL
+        msg_id = cur.lastrowid
+        return {"id": msg_id}
+        
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
         cur.close()
         conn.close()
-        emit("nouveau_message", {
-            "id": row[0],
-            "expediteur_id": data["expediteur_id"],
-            "expediteur_nom": data["expediteur_nom"],
-            "contenu": data["contenu"],
-            "timestamp": str(row[1])
-        }, room=str(data["destinataire_id"]))
-    except Exception as e:
-        emit("erreur", {"message": str(e)})
 
-if __name__ == "__main__":
-    socketio.run(app, debug=True, host="0.0.0.0", port=5000)
+def obtenir_conversation(conversation_id):
+    """Récupère l'historique complet des messages d'une conversation spécifique."""
+    conn = get_db_connection()
+    cur = conn.cursor(pymysql.cursors.DictCursor)
+    
+    try:
+        # Trié du plus ancien au plus récent pour le fil de discussion
+        query = """
+            SELECT id, conversation_id, expediteur_id, contenu, date_envoi 
+            FROM messages 
+            WHERE conversation_id = %s 
+            ORDER BY date_envoi ASC
+        """
+        cur.execute(query, (conversation_id,))
+        rows = cur.fetchall()
+        
+        # Formatage propre en dictionnaire pour le renvoyer facilement au frontend
+        messages = []
+        for r in rows:
+            messages.append({
+                "id": r["id"],
+                "conversation_id": r["conversation_id"],
+                "expediteur_id": r["expediteur_id"],
+                "contenu": r["contenu"],
+                "date_envoi": str(r["date_envoi"])  # Converti en chaîne pour éviter les bugs JSON avec le type DateTime
+            })
+        return messages
+        
+    except Exception as e:
+        raise e
+    finally:
+        cur.close()
+        conn.close()
