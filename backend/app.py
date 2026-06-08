@@ -1,8 +1,7 @@
-<<<<<<< HEAD
 from flask import Flask, render_template, session, redirect, url_for
 from flask_socketio import SocketIO, emit, join_room
 from flask_bcrypt import Bcrypt
-import psycopg2, os
+import mysql.connector, os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,12 +12,12 @@ bcrypt = Bcrypt(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
 def get_db():
-    return psycopg2.connect(
+    return mysql.connector.connect(
         host=os.getenv("DB_HOST", "localhost"),
         database=os.getenv("DB_NAME", "mentorlink"),
-        user=os.getenv("DB_USER", "postgres"),
+        user=os.getenv("DB_USER", "root"),
         password=os.getenv("DB_PASSWORD", ""),
-        port=os.getenv("DB_PORT", "5432")
+        port=int(os.getenv("DB_PORT", "3306"))
     )
 
 from routes.auth import auth_bp
@@ -48,52 +47,24 @@ def envoyer(data):
         conn = get_db()
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO messages (conversation_id, expediteur_id, contenu) VALUES (%s,%s,%s) RETURNING id, date_envoi",
+            "INSERT INTO messages (conversation_id, expediteur_id, contenu) VALUES (%s, %s, %s)",
             (data["conversation_id"], data["expediteur_id"], data["contenu"])
         )
-        row = cur.fetchone()
         conn.commit()
+        msg_id = cur.lastrowid
+        cur.execute("SELECT date_envoi FROM messages WHERE id = %s", (msg_id,))
+        date_envoi = cur.fetchone()[0]
         cur.close()
         conn.close()
         emit("nouveau_message", {
-            "id": row[0],
-            "expediteur_id": data["expediteur_id"],  
+            "id": msg_id,
+            "expediteur_id": data["expediteur_id"],
             "expediteur_nom": data["expediteur_nom"],
             "contenu": data["contenu"],
-            "date_envoi": str(row[1]) 
+            "date_envoi": str(date_envoi)
         }, room=str(data["conversation_id"]))
     except Exception as e:
         emit("erreur", {"message": str(e)})
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, host="0.0.0.0", port=5000)
-=======
-from flask import Flask
-from flask_cors import CORS
-from config.config import Config
-from routes.auth import auth_bp
-
-app = Flask(__name__)
-
-# config
-app.config.from_object(Config)
-
-# blueprints
-app.register_blueprint (auth_bp, url_prefix="/auth")
-
-
-@app.route("/")
-def home():
-    return {"message": "API Flask opérationnelle"}
-@app.errorhandler(404)
-def not_found(e):
-    return {"error": "Route introuvable"}, 404
-
-@app.errorhandler(500)
-def server_error(e):
-    return {"error":"Erreur serveur"}, 500
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
->>>>>>> d74c97c5b1ce488caa2b1f8a8a1fdbc44c6aeafb
