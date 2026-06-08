@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import re
 import logging
 import pymysql
@@ -135,4 +136,32 @@ def me():
 @auth_bp.route("/logout", methods=["POST"])
 def logout():
     session.clear()
+<<<<<<< HEAD
     return jsonify({"message": "Déconnecté"})
+=======
+    return jsonify({"message": "Déconnecté"})
+
+
+=======
+from flask import Blueprint, request, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+from models.user import *
+@auth_bp.route("/register", methods=["POST"])
+def register():
+    data = request.get_json()
+    nom = data["nom"]
+    E_mail = data["E-mail"]
+    Mot_de_passe = data["Mot_de_passe"]
+    Rôle = data["Rôle"]
+    if not nom or E_mail or Mot_de_passe or Rôle:
+        return jsonify({ "error": "Tous les champs sont obligatoires"})
+    user_exist = user.query.filter_by(E_mail=E_mail).first()
+    if user_exist:
+        return jsonify({"error": "Cet e-mail existe déjà"}), 409
+    if len (Mot_de_passe) < 6:
+        return jsonify({"error": "Mot de passe trop court"}), 400
+    hashed_password = generate_password_hash(password)
+    new_user = User(E_mail=E_mail, password=hashed_password)
+    
+>>>>>>> f886a4d (feat: ajout offre_demande et modification auth)
+>>>>>>> c84f7e96a267d9cf97a6c3131606b843eace6625
