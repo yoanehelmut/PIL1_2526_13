@@ -1,7 +1,15 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify
+from flask import Flask, render_template, session, redirect, url_for
+from flask_socketio import SocketIO, emit, join_room
+from flask_bcrypt import Bcrypt
 import psycopg2, os
+from dotenv import load_dotenv
 
-messages_bp = Blueprint("messages", __name__)
+load_dotenv()
+
+app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "mentorlink2026")
+bcrypt = Bcrypt(app)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
 def get_db():
     return psycopg2.connect(
@@ -12,81 +20,49 @@ def get_db():
         port=os.getenv("DB_PORT", "5432")
     )
 
-@messages_bp.route("/messagerie")
-def messagerie():
+from routes.auth import auth_bp
+from routes.messages import messages_bp
+app.register_blueprint(auth_bp)
+app.register_blueprint(messages_bp)
+
+@app.route("/")
+def index():
+    if "user_id" in session:
+        return redirect(url_for("dashboard"))
+    return redirect(url_for("auth.login"))
+
+@app.route("/dashboard")
+def dashboard():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
-    uid = session["user_id"]
-    try:
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT DISTINCT
-                CASE WHEN m.expediteur_id = %s THEN m.destinataire_id ELSE m.expediteur_id END AS interlocuteur_id,
-                u.nom
-            FROM messages m
-            JOIN users u ON u.id = CASE WHEN m.expediteur_id = %s THEN m.destinataire_id ELSE m.expediteur_id END
-            WHERE m.expediteur_id = %s OR m.destinataire_id = %s
-        """, (uid, uid, uid, uid))
-        conversations = cur.fetchall()
-    except psycopg2.Error as e:
-        return jsonify({"error": str(e)}), 500
-    finally:
-        cur.close()
-        conn.close()
-    return render_template("messagerie.html", conversations=conversations, user=session)
+    return render_template("dashboard.html", user=session)
 
-@messages_bp.route("/conversation/<int:interlocuteur_id>/messages")
-def get_messages(interlocuteur_id):
-    if "user_id" not in session:
-        return jsonify({"error": "Non connecte"}), 401
-    uid = session["user_id"]
-    try:
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT m.id, u.nom, m.expediteur_id, m.contenu, m.timestamp
-            FROM messages m
-            JOIN users u ON u.id = m.expediteur_id
-            WHERE (m.expediteur_id = %s AND m.destinataire_id = %s)
-               OR (m.expediteur_id = %s AND m.destinataire_id = %s)
-            ORDER BY m.timestamp ASC
-        """, (uid, interlocuteur_id, interlocuteur_id, uid))
-        msgs = [
-            {"id": r[0], "expediteur": r[1], "expediteur_id": r[2], "contenu": r[3], "date": str(r[4])}
-            for r in cur.fetchall()
-        ]
-    except psycopg2.Error as e:
-        return jsonify({"error": str(e)}), 500
-    finally:
-        cur.close()
-        conn.close()
-    return jsonify(msgs)
+@socketio.on("rejoindre_conversation")
+def rejoindre(data):
+    join_room(str(data["destinataire_id"]))
 
-@messages_bp.route("/message/envoyer", methods=["POST"])
-def envoyer_message():
-    if "user_id" not in session:
-        return jsonify({"error": "Non connecte"}), 401
-    data = request.get_json()
-    if not data or "destinataire_id" not in data or "contenu" not in data:
-        return jsonify({"error": "Données manquantes"}), 400s
-    destinataire_id = data["destinataire_id"]
-    uid = session["user_id"]
-    if uid == destinataire_id:
-        return jsonify({"error": "Impossible d'envoyer un message à soi-même"}), 400
+@socketio.on("envoyer_message")
+def envoyer(data):
     try:
         conn = get_db()
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO messages (expediteur_id, destinataire_id, contenu) VALUES (%s, %s, %s) RETURNING id, timestamp",
-            (uid, destinataire_id, data["contenu"])
+            "INSERT INTO messages (expediteur_id, destinataire_id, contenu) VALUES (%s,%s,%s) RETURNING id, timestamp",
+            (data["expediteur_id"], data["destinataire_id"], data["contenu"])
         )
         row = cur.fetchone()
         conn.commit()
-    except psycopg2.Error as e:
-        conn.rollback()
-        return jsonify({"error": str(e)}), 500
-    finally:
         cur.close()
         conn.close()
-    return jsonify({"id": row[0], "timestamp": str(row[1])})
+        emit("nouveau_message", {
+            "id": row[0],
+            "expediteur_id": data["expediteur_id"],
+            "expediteur_nom": data["expediteur_nom"],
+            "contenu": data["contenu"],
+            "timestamp": str(row[1])
+        }, room=str(data["destinataire_id"]))
+    except Exception as e:
+        emit("erreur", {"message": str(e)})
+
+if __name__ == "__main__":
+    socketio.run(app, debug=True, host="0.0.0.0", port=5000)
