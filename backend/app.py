@@ -26,7 +26,7 @@ from config.database import get_db_connection
 
 # 5. Importation et Enregistrement des Blueprints de l'API
 from routes.auth import auth_bp
-from routes.messages import messages_bp
+from models.message import messages_bp
 from routes.matching import matching_bp  # AJOUT : Importation du Blueprint matching
 
 app.register_blueprint(auth_bp, url_prefix="/api/auth")
