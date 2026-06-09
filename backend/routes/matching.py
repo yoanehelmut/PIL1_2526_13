@@ -1,32 +1,31 @@
 # =====================================================================
 # PROJET MENTORLINK (PIL1_2526_13)
 # Fichier : backend/routes/matching.py
-# Rôle : Algorithme de matching + gestion des offres et demandes
+# Rôle : Algorithme de matching + gestion des offres et demandes (PyMySQL)
 # =====================================================================
 
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import db, User, Offer, Request as MentorRequest
+import pymysql
+from flask import Blueprint, jsonify, request, session
+from config.database import get_db_connection
 
 matching_bp = Blueprint('matching', __name__)
 
+# Listes officielles alignées avec profile.py
+FILIERES_VALIDES = ['Informatique', 'Mathématiques', 'Physique', 'Économie', 'Droit']
+NIVEAUX_VALIDES = ['L1', 'L2', 'L3', 'M1', 'M2']
 
 # ─────────────────────────────────────────────
-# ALGORITHME DE SCORING (barème officiel)
+# ALGORITHME DE SCORING (Modifié pour PyMySQL)
 # ─────────────────────────────────────────────
 
 def compute_score(user_a: dict, user_b: dict) -> int:
-    """
-    Calcule le score de compatibilité entre deux profils.
+    """Calcule le score de compatibilité entre deux profils.
     Score max : 100 points
-      - Matières / compétences communes : +40 pts
-      - Disponibilités horaires compatibles : +30 pts
-      - Proximité de filière : +20 pts
-      - Proximité de niveau d'étude : +10 pts
     """
     score = 0
 
-    # ── 1. Compétences communes (40 pts) ──────────────────────────
+    # ── 1. Compétences / Matières communes (40 pts) ────────────────
+    # Recherche les correspondances entre les compétences de l'un et les lacunes de l'autre
     skills_a = set(user_a.get("skills", []))
     skills_b = set(user_b.get("skills", []))
     total_skills = skills_a | skills_b
@@ -34,7 +33,7 @@ def compute_score(user_a: dict, user_b: dict) -> int:
         ratio = len(skills_a & skills_b) / len(total_skills)
         score += int(ratio * 40)
 
-    # ── 2. Disponibilités compatibles (30 pts) ────────────────────
+    # ── 2. Disponibilités (30 pts) (Simulation ou à implémenter si géré en BDD) ─
     avail_a = set(user_a.get("availabilities", []))
     avail_b = set(user_b.get("availabilities", []))
     total_avail = avail_a | avail_b
@@ -43,11 +42,10 @@ def compute_score(user_a: dict, user_b: dict) -> int:
         score += int(ratio * 30)
 
     # ── 3. Proximité de filière (20 pts) ──────────────────────────
-    FILIERES = ["IA", "IM", "GL", "SE_IOT", "SI"]
     filiere_a = user_a.get("filiere", "")
     filiere_b = user_b.get("filiere", "")
-    if filiere_a in FILIERES and filiere_b in FILIERES:
-        dist = abs(FILIERES.index(filiere_a) - FILIERES.index(filiere_b))
+    if filiere_a in FILIERES_VALIDES and filiere_b in FILIERES_VALIDES:
+        dist = abs(FILIERES_VALIDES.index(filiere_a) - FILIERES_VALIDES.index(filiere_b))
         if dist == 0:
             score += 20
         elif dist == 1:
@@ -56,129 +54,95 @@ def compute_score(user_a: dict, user_b: dict) -> int:
             score += 5
 
     # ── 4. Proximité de niveau (10 pts) ───────────────────────────
-    try:
-        niveau_a = int(user_a.get("niveau", 0))
-        niveau_b = int(user_b.get("niveau", 0))
-        diff = abs(niveau_a - niveau_b)
+    filiere_a_niv = user_a.get("niveau", "")
+    filiere_b_niv = user_b.get("niveau", "")
+    if filiere_a_niv in NIVEAUX_VALIDES and filiere_b_niv in NIVEAUX_VALIDES:
+        diff = abs(NIVEAUX_VALIDES.index(filiere_a_niv) - NIVEAUX_VALIDES.index(filiere_b_niv))
         if diff == 0:
             score += 10
         elif diff == 1:
             score += 7
         elif diff == 2:
             score += 3
-    except (ValueError, TypeError):
-        pass
 
     return min(score, 100)
 
 
-def build_user_profile(user: User) -> dict:
-    """Construit un dictionnaire de profil à partir de l'ORM."""
+def get_user_matching_profile(user_id, cursor):
+    """Construit dynamiquement le profil complet pour l'algorithme."""
+    cursor.execute("SELECT id, nom, prenom, filiere, niveau, role FROM users WHERE id = %s", (user_id,))
+    user = cursor.fetchone()
+    if not user:
+        return None
+
+    # Récupération des compétences et lacunes
+    cursor.execute("SELECT matiere FROM competences WHERE user_id = %s", (user_id,))
+    matieres = [row['matiere'] for row in cursor.fetchall()]
+
     return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "filiere": user.filiere or "",
-        "niveau": user.niveau or 0,
-        "skills": [us.skill.name for us in user.user_skills],
-        "availabilities": [a.slot for a in user.availabilities],
-        "bio": user.bio or "",
-        "role": user.role,
+        "id": user["id"],
+        "nom": user["nom"],
+        "prenom": user["prenom"],
+        "filiere": user["filiere"] or "",
+        "niveau": user["niveau"] or "",
+        "skills": matieres,
+        "availabilities": [],  # Optionnel : Ajoutez vos créneaux si présents en BDD
+        "role": user["role"]
     }
 
 
 # ─────────────────────────────────────────────
-# ROUTES OFFRES
+# ROUTES API OFFRES & DEMANDES
 # ─────────────────────────────────────────────
 
 @matching_bp.route("/offers", methods=["POST"])
-@jwt_required()
 def create_offer():
-    """Créer une offre de mentorat."""
-    current_user_id = get_jwt_identity()
-    data = request.get_json()
+    if 'user_id' not in session:
+        return jsonify({"error": "Non autorisé. Veuillez vous connecter."}), 401
 
-    if not data:
-        return jsonify({"error": "Corps JSON manquant"}), 400
+    current_user_id = session['user_id']
+    data = request.get_json(silent=True)
+    if not data or not all(k in data for k in ["title", "description", "skills_offered"]):
+        return jsonify({"error": "Données incomplètes ou invalides"}), 400
 
-    for field in ["title", "description", "skills_offered"]:
-        if field not in data:
-            return jsonify({"error": f"Champ manquant : {field}"}), 400
-
-    offer = Offer(
-        user_id=current_user_id,
-        title=data["title"],
-        description=data["description"],
-        skills_offered=",".join(data["skills_offered"]),
-        status="active"
-    )
-    db.session.add(offer)
-    db.session.commit()
-    return jsonify({"message": "Offre créée", "offer_id": offer.id}), 201
+    connexion = get_db_connection()
+    curseur = connexion.cursor()
+    try:
+        curseur.execute("""
+            INSERT INTO offers (user_id, title, description, skills_offered, status)
+            VALUES (%s, %s, %s, %s, 'active')
+        """, (current_user_id, data["title"], data["description"], ",".join(data["skills_offered"])))
+        connexion.commit()
+        return jsonify({"message": "Offre créée avec succès !"}), 201
+    except Exception as e:
+        connexion.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        curseur.close()
+        connexion.close()
 
 
 @matching_bp.route("/offers", methods=["GET"])
-@jwt_required()
 def list_offers():
-    """Lister toutes les offres actives."""
-    offers = Offer.query.filter_by(status="active").all()
-    return jsonify([{
-        "id": o.id,
-        "user_id": o.user_id,
-        "username": o.author.username,
-        "filiere": o.author.filiere,
-        "niveau": o.author.niveau,
-        "title": o.title,
-        "description": o.description,
-        "skills_offered": o.skills_offered.split(","),
-    } for o in offers]), 200
+    if 'user_id' not in session:
+        return jsonify({"error": "Non autorisé."}), 401
 
-
-# ─────────────────────────────────────────────
-# ROUTES DEMANDES
-# ─────────────────────────────────────────────
-
-@matching_bp.route("/requests", methods=["POST"])
-@jwt_required()
-def create_request():
-    """Créer une demande de mentorat."""
-    current_user_id = get_jwt_identity()
-    data = request.get_json()
-
-    if not data:
-        return jsonify({"error": "Corps JSON manquant"}), 400
-
-    for field in ["title", "description", "skills_needed"]:
-        if field not in data:
-            return jsonify({"error": f"Champ manquant : {field}"}), 400
-
-    req = MentorRequest(
-        user_id=current_user_id,
-        title=data["title"],
-        description=data["description"],
-        skills_needed=",".join(data["skills_needed"]),
-        status="active"
-    )
-    db.session.add(req)
-    db.session.commit()
-    return jsonify({"message": "Demande créée", "request_id": req.id}), 201
-
-
-@matching_bp.route("/requests", methods=["GET"])
-@jwt_required()
-def list_requests():
-    """Lister toutes les demandes actives."""
-    reqs = MentorRequest.query.filter_by(status="active").all()
-    return jsonify([{
-        "id": r.id,
-        "user_id": r.user_id,
-        "username": r.requester.username,
-        "filiere": r.requester.filiere,
-        "niveau": r.requester.niveau,
-        "title": r.title,
-        "description": r.description,
-        "skills_needed": r.skills_needed.split(","),
-    } for r in reqs]), 200
+    connexion = get_db_connection()
+    curseur = connexion.cursor(pymysql.cursors.DictCursor)
+    try:
+        curseur.execute("""
+            SELECT o.id, o.user_id, o.title, o.description, o.skills_offered, u.nom, u.prenom, u.filiere, u.niveau
+            FROM offers o
+            JOIN users u ON o.user_id = u.id
+            WHERE o.status = 'active'
+        """)
+        offres = curseur.fetchall()
+        for o in offres:
+            o["skills_offered"] = o["skills_offered"].split(",") if o["skills_offered"] else []
+        return jsonify(offres), 200
+    finally:
+        curseur.close()
+        connexion.close()
 
 
 # ─────────────────────────────────────────────
@@ -186,58 +150,58 @@ def list_requests():
 # ─────────────────────────────────────────────
 
 @matching_bp.route("/matching/<int:user_id>", methods=["GET"])
-@jwt_required()
 def get_matches(user_id):
-    """Retourne la liste des utilisateurs compatibles triée par score décroissant."""
-    current_user = db.session.get(User, user_id)
-    if not current_user:
-        return jsonify({"error": "Utilisateur introuvable"}), 404
+    """Retourne les profils compatibles classés par pertinence."""
+    if 'user_id' not in session:
+        return jsonify({"error": "Non autorisé."}), 401
 
-    current_profile = build_user_profile(current_user)
-    candidates = User.query.filter(User.id != user_id).all()
+    connexion = get_db_connection()
+    curseur = connexion.cursor(pymysql.cursors.DictCursor)
+    try:
+        current_profile = get_user_matching_profile(user_id, curseur)
+        if not current_profile:
+            return jsonify({"error": "Utilisateur introuvable"}), 404
 
-    results = []
-    for candidate in candidates:
-        candidate_profile = build_user_profile(candidate)
-        score = compute_score(current_profile, candidate_profile)
-        if score > 0:
-            results.append({**candidate_profile, "score": score})
+        # Récupère tous les candidats ayant un rôle différent (un Mentor cherche un Étudiant, et inversement)
+        curseur.execute("SELECT id FROM users WHERE id != %s AND role != %s", (user_id, current_profile["role"]))
+        candidate_ids = [row["id"] for row in curseur.fetchall()]
 
-    results.sort(key=lambda x: x["score"], reverse=True)
+        results = []
+        for c_id in candidate_ids:
+            candidate_profile = get_user_matching_profile(c_id, curseur)
+            if candidate_profile:
+                score = compute_score(current_profile, candidate_profile)
+                if score > 0:
+                    candidate_profile["score"] = score
+                    results.append(candidate_profile)
 
-    return jsonify({
-        "user_id": user_id,
-        "total": len(results),
-        "matches": results
-    }), 200
+        # Tri décroissant selon le barème de score
+        results.sort(key=lambda x: x["score"], reverse=True)
 
+        return jsonify({
+            "user_id": user_id,
+            "total": len(results),
+            "matches": results
+        }), 200
 
-# ─────────────────────────────────────────────
-# TEST STANDALONE
-# ─────────────────────────────────────────────
-
-def test_scoring():
-    alice = {
-        "filiere": "IA", "niveau": 2,
-        "skills": ["Python", "Machine Learning", "SQL", "Docker"],
-        "availabilities": ["lundi_matin", "mercredi_soir", "vendredi_matin"],
-    }
-    bob = {
-        "filiere": "IA", "niveau": 3,
-        "skills": ["Python", "Deep Learning", "SQL", "Linux"],
-        "availabilities": ["lundi_matin", "jeudi_soir", "vendredi_matin"],
-    }
-    carol = {
-        "filiere": "GL", "niveau": 1,
-        "skills": ["Java", "Git", "SQL"],
-        "availabilities": ["mardi_matin", "jeudi_matin"],
-    }
-
-    print("=== Test Algorithme de Scoring ===")
-    print(f"Alice ↔ Bob : {compute_score(alice, bob)}/100")
-    print(f"Alice ↔ Carol : {compute_score(alice, carol)}/100")
-    print(f"Bob ↔ Carol : {compute_score(bob, carol)}/100")
+    except Exception as e:
+        return jsonify({"error": f"Erreur lors du calcul du matching : {str(e)}"}), 500
+    finally:
+        curseur.close()
+        connexion.close()
 
 
-if __name__ == "__main__":
-    test_scoring()
+# Pour l'appel direct (uniquement via la fonction utilitaire de match)
+def get_matching_by_users(user_id_1, user_id_2):
+    """Fonction de compatibilité pour chat.py (Vérifie s'ils partagent un score minimum)"""
+    connexion = get_db_connection()
+    curseur = connexion.cursor(pymysql.cursors.DictCursor)
+    try:
+        p1 = get_user_matching_profile(user_id_1, curseur)
+        p2 = get_user_matching_profile(user_id_2, curseur)
+        if p1 and p2 and p1["role"] != p2["role"]:
+            return compute_score(p1, p2) > 0
+        return False
+    finally:
+        curseur.close()
+        connexion.close()
