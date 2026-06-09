@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Matching - MentorLink</title>
+    <link rel="stylesheet" href="../static/css/style .css">
+    <style>
+        .matching-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .matching-container h2 {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #1a1a2e;
+            margin-bottom: 6px;
+        }
+
+        .matching-container .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .filtres {
+            background: white;
+            border-radius: 14px;
+            padding: 20px 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 28px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filtres .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .filtres label {
+            font-size: 0.82rem;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .filtres select,
+        .filtres input {
+            padding: 9px 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: Arial;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        .filtres button {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            width: auto;
+            align-self: flex-end;
+        }
+
+        .results-title {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 16px;
+        }
+
+        .mentor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .mentor-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 0;
+        }
+
+        .mentor-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #e7f0ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+            border: 2px solid #0d6efd;
+        }
+
+        .card-info h4 {
+            margin: 0 0 3px;
+            font-size: 1rem;
+            color: #1a1a2e;
+        }
+
+        .card-info p {
+            margin: 0;
+            font-size: 0.82rem;
+            color: #888;
+        }
+
+        .score-bar-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score-bar-wrapper span {
+            font-size: 0.82rem;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        .score-bar {
+            flex: 1;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #0d6efd, #00c6ff);
+            transition: width 0.6s ease;
+        }
+
+        .score-pct {
+            font-weight: bold;
+            color: #0d6efd;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .competences-commun {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag-small {
+            background: #e7f0ff;
+            color: #0d6efd;
+            border-radius: 12px;
+            padding: 3px 10px;
+            font-size: 0.78rem;
+        }
+
+        .dispo-line {
+            font-size: 0.82rem;
+            color: #555;
+        }
+
+        .dispo-line span {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+
+        .contact-btn {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 9px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            width: 100%;
+            margin-top: auto;
+            transition: background 0.2s;
+        }
+
+        .contact-btn:hover { background: #0b5ed7; }
+
+        .badge-filiere-small {
+            background: #e7f0ff;
+            color: #0d6efd;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aaa;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <h1 class="logo">MentorLink🎓</h1>
+    <div style="margin-top:15px">
+        <a class="btn" href="../templates/profile.html">Mon Profil</a>
+        <a class="btn" href="../templates/offers.html">Offres</a>
+        <a class="btn" href="../templates/chat.html">Messages</a>
+    </div>
+</nav>
+
+<div class="matching-container">
+    <h2>🔗 Matching Mentor / Mentoré</h2>
+    <p class="subtitle">Trouvez les correspondances les plus compatibles avec votre profil</p>
+
+    <!-- Filtres -->
+    <div class="filtres">
+        <div class="form-group">
+            <label>Matière / Compétence</label>
+            <input type="text" id="filtreMatiere" placeholder="Ex: Python, SQL...">
+        </div>
+        <div class="form-group">
+            <label>Filière</label>
+            <select id="filtreFiliere">
+                <option value="">Toutes</option>
+                <option>IA</option>
+                <option>IM</option>
+                <option>GL</option>
+                <option>SE&IoT</option>
+                <option>SI</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Type</label>
+            <select id="filtreType">
+                <option value="">Mentor & Mentoré</option>
+                <option value="mentor">Mentor</option>
+                <option value="mentore">Mentoré</option>
+            </select>
+        </div>
+        <button onclick="filtrer()">🔍 Rechercher</button>
+    </div>
+
+    <p class="results-title" id="resultsTitle">4 correspondances trouvées pour vous</p>
+
+    <div class="mentor-grid" id="mentorGrid"></div>
+</div>
+
+<script>
+    const data = [
+        {
+            nom: "Kofi Mensah", filiere: "IA", niveau: "Licence 2", type: "mentor",
+            avatar: "👨‍💻", score: 92,
+            competences: ["Python", "Machine Learning", "Algorithmique"],
+            dispo: "Lun, Mer, Ven · 14h-18h"
+        },
+        {
+            nom: "Aïcha Traoré", filiere: "GL", niveau: "Licence 3", type: "mentor",
+            avatar: "👩‍💻", score: 85,
+            competences: ["SQL", "Base de données", "Java"],
+            dispo: "Mar, Jeu · 10h-12h"
+        },
+        {
+            nom: "Brice Hounkpè", filiere: "SI", niveau: "Licence 2", type: "mentore",
+            avatar: "👨‍🎓", score: 78,
+            competences: ["Réseau", "Linux"],
+            dispo: "Sam · 9h-13h"
+        },
+        {
+            nom: "Fatou Diallo", filiere: "IM", niveau: "Licence 1", type: "mentore",
+            avatar: "👩‍🎓", score: 70,
+            competences: ["HTML/CSS", "JavaScript"],
+            dispo: "Lun, Ven · 16h-19h"
+        },
+    ];
+
+    function renderCards(liste) {
+        const grid = document.getElementById('mentorGrid');
+        const title = document.getElementById('resultsTitle');
+        grid.innerHTML = '';
+        title.textContent = liste.length + ' correspondance(s) trouvée(s)';
+
+        if (liste.length === 0) {
+            grid.innerHTML = '<div class="empty-state">😕 Aucun résultat trouvé. Essayez d\'autres filtres.</div>';
+            return;
+        }
+
+        liste.forEach(m => {
+            const card = document.createElement('div');
+            card.className = 'mentor-card';
+            card.innerHTML = `
+                <div class="card-top">
+                    <div class="avatar">${m.avatar}</div>
+                    <div class="card-info">
+                        <h4>${m.nom}</h4>
+                        <p>${m.niveau} &nbsp; <span class="badge-filiere-small">${m.filiere}</span></p>
+                        <p style="color:${m.type==='mentor'?'#0d6efd':'#28a745'};font-weight:bold;margin-top:3px">
+                            ${m.type === 'mentor' ? '🎓 Mentor' : '📖 Mentoré'}
+                        </p>
+                    </div>
+                </div>
+                <div class="score-bar-wrapper">
+                    <span>Compatibilité</span>
+                    <div class="score-bar"><div class="score-fill" style="width:${m.score}%"></div></div>
+                    <span class="score-pct">${m.score}%</span>
+                </div>
+                <div class="competences-commun">
+                    ${m.competences.map(c => `<span class="tag-small">${c}</span>`).join('')}
+                </div>
+                <div class="dispo-line">🕐 <span>${m.dispo}</span></div>
+                <button class="contact-btn" onclick="window.location.href='messagerie.html'">💬 Contacter</button>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function filtrer() {
+        const matiere = document.getElementById('filtreMatiere').value.toLowerCase();
+        const filiere = document.getElementById('filtreFiliere').value;
+        const type = document.getElementById('filtreType').value;
+
+        const result = data.filter(m => {
+            const matchMatiere = !matiere || m.competences.some(c => c.toLowerCase().includes(matiere));
+            const matchFiliere = !filiere || m.filiere === filiere;
+            const matchType = !type || m.type === type;
+            return matchMatiere && matchFiliere && matchType;
+        });
+
+        renderCards(result);
+    }
+
+    renderCards(data);
+</script>
+</body>
+</html>

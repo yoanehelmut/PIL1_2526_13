@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Messagerie - MentorLink</title>
+    <link rel="stylesheet" href="../static/css/style .css">
+    <style>
+        .msg-layout {
+            display: flex;
+            height: calc(100vh - 80px);
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Sidebar conversations */
+        .conversations {
+            width: 300px;
+            border-right: 1.5px solid #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .conv-header {
+            padding: 18px 20px;
+            font-weight: bold;
+            font-size: 1rem;
+            border-bottom: 1.5px solid #f0f0f0;
+            color: #1a1a2e;
+        }
+
+        .conv-list { overflow-y: auto; flex: 1; }
+
+        .conv-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            cursor: pointer;
+            border-bottom: 1px solid #f8f8f8;
+            transition: background 0.15s;
+        }
+
+        .conv-item:hover { background: #f4f8ff; }
+        .conv-item.active { background: #e7f0ff; }
+
+        .conv-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #e7f0ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .conv-info { flex: 1; min-width: 0; }
+
+        .conv-info h4 {
+            margin: 0 0 3px;
+            font-size: 0.92rem;
+            color: #1a1a2e;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conv-info p {
+            margin: 0;
+            font-size: 0.78rem;
+            color: #999;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .notif-dot {
+            width: 9px;
+            height: 9px;
+            background: #0d6efd;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Zone chat */
+        .chat-zone {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 16px 20px;
+            border-bottom: 1.5px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-header .conv-avatar { width: 38px; height: 38px; font-size: 18px; }
+
+        .chat-header-info h4 {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #1a1a2e;
+        }
+
+        .chat-header-info p {
+            margin: 0;
+            font-size: 0.78rem;
+            color: #28a745;
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #f8faff;
+        }
+
+        .msg-bubble {
+            max-width: 65%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .msg-bubble.received {
+            background: white;
+            color: #222;
+            align-self: flex-start;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-bubble.sent {
+            background: #0d6efd;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-time {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-top: 4px;
+            display: block;
+        }
+
+        /* Input */
+        .input-area {
+            padding: 14px 20px;
+            border-top: 1.5px solid #f0f0f0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            font-family: Arial;
+            margin: 0;
+            width: auto;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-area input:focus { border-color: #0d6efd; }
+
+        .send-btn {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: auto;
+            padding: 0 16px;
+            border-radius: 24px;
+            transition: background 0.2s;
+        }
+
+        .send-btn:hover { background: #0b5ed7; }
+
+        .empty-chat {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: #bbb;
+            font-size: 1rem;
+            background: #f8faff;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <h1 class="logo">MentorLink🎓</h1>
+    <div style="margin-top:15px">
+        <a class="btn" href="../templates/profile.html">Mon Profil</a>
+        <a class="btn" href="../templates/matching.html">Matching</a>
+        <a class="btn" href="../templates/offers.html">Offres</a>
+    </div>
+</nav>
+
+<div class="msg-layout">
+
+    <!-- Liste conversations -->
+    <div class="conversations">
+        <div class="conv-header">💬 Conversations</div>
+        <div class="conv-list" id="convList"></div>
+    </div>
+
+    <!-- Zone chat -->
+    <div class="chat-zone" id="chatZone">
+        <div class="empty-chat" id="emptyState">
+            <span style="font-size:3rem">💬</span>
+            <span>Sélectionnez une conversation</span>
+        </div>
+        <div id="chatContent" style="display:none;flex:1;display:none;flex-direction:column">
+            <div class="chat-header" id="chatHeader"></div>
+            <div class="messages-area" id="messagesArea"></div>
+            <div class="input-area">
+                <input type="text" id="msgInput" placeholder="Écrire un message..." onkeypress="handleKey(event)">
+                <button class="send-btn" onclick="envoyer()">➤</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const conversations = [
+        {
+            id: 1, nom: "Kofi Mensah", avatar: "👨‍💻", statut: "En ligne",
+            messages: [
+                { text: "Bonjour ! Je suis disponible pour t'aider en Python.", from: "received", time: "10:30" },
+                { text: "Super ! Je voudrais comprendre les listes et dictionnaires.", from: "sent", time: "10:32" },
+                { text: "Pas de problème, on peut commencer dès maintenant.", from: "received", time: "10:33" },
+            ],
+            unread: true
+        },
+        {
+            id: 2, nom: "Aïcha Traoré", avatar: "👩‍💻", statut: "Hors ligne",
+            messages: [
+                { text: "Tu peux m'expliquer les jointures SQL ?", from: "sent", time: "Hier" },
+                { text: "Bien sûr ! Je t'envoie des exercices demain.", from: "received", time: "Hier" },
+            ],
+            unread: false
+        },
+        {
+            id: 3, nom: "Brice Hounkpè", avatar: "👨‍🎓", statut: "En ligne",
+            messages: [
+                { text: "Merci pour la session d'algorithmique !", from: "sent", time: "Lun" },
+                { text: "Avec plaisir ! N'hésite pas si tu as d'autres questions.", from: "received", time: "Lun" },
+            ],
+            unread: false
+        },
+    ];
+
+    let convActive = null;
+
+    function renderConvList() {
+        const list = document.getElementById('convList');
+        list.innerHTML = '';
+        conversations.forEach(c => {
+            const item = document.createElement('div');
+            item.className = 'conv-item' + (convActive && convActive.id === c.id ? ' active' : '');
+            const lastMsg = c.messages[c.messages.length - 1];
+            item.innerHTML = `
+                <div class="conv-avatar">${c.avatar}</div>
+                <div class="conv-info">
+                    <h4>${c.nom}</h4>
+                    <p>${lastMsg.text}</p>
+                </div>
+                ${c.unread ? '<div class="notif-dot"></div>' : ''}
+            `;
+            item.onclick = () => openConv(c);
+            list.appendChild(item);
+        });
+    }
+
+    function openConv(conv) {
+        convActive = conv;
+        conv.unread = false;
+        renderConvList();
+
+        document.getElementById('emptyState').style.display = 'none';
+        const chatContent = document.getElementById('chatContent');
+        chatContent.style.display = 'flex';
+        chatContent.style.flexDirection = 'column';
+        chatContent.style.flex = '1';
+
+        // Header
+        document.getElementById('chatHeader').innerHTML = `
+            <div class="conv-avatar">${conv.avatar}</div>
+            <div class="chat-header-info">
+                <h4>${conv.nom}</h4>
+                <p>${conv.statut}</p>
+            </div>
+        `;
+
+        renderMessages(conv.messages);
+    }
+
+    function renderMessages(messages) {
+        const area = document.getElementById('messagesArea');
+        area.innerHTML = '';
+        messages.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'msg-bubble ' + m.from;
+            div.innerHTML = `${m.text}<span class="msg-time">${m.time}</span>`;
+            area.appendChild(div);
+        });
+        area.scrollTop = area.scrollHeight;
+    }
+
+    function envoyer() {
+        if (!convActive) return;
+        const input = document.getElementById('msgInput');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const now = new Date();
+        const time = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+        convActive.messages.push({ text, from: 'sent', time });
+        input.value = '';
+        renderMessages(convActive.messages);
+        renderConvList();
+    }
+
+    function handleKey(e) {
+        if (e.key === 'Enter') envoyer();
+    }
+
+    renderConvList();
+</script>
+</body>
+</html>
