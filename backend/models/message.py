@@ -1,64 +1,76 @@
-# PROJET MENTORLINK (PIL1_2526_13)
-# Fichier : backend/models/message.py
-# Rôle : Accès base de données (Requêtes SQL) pour les messages
-
 import pymysql
 from config.database import get_db_connection
 
 def sauvegarder_message(conversation_id, expediteur_id, contenu):
-    """Insère un nouveau message dans la base de données."""
-    conn = get_db_connection()
-    cur = conn.cursor(pymysql.cursors.DictCursor)
-    
+    """
+    Insère un nouveau message dans la base de données.
+    Gère proprement le commit (validation) et le rollback en cas d'erreur.
+    """
+    connexion = None
+    curseur = None
     try:
-        query = """
+        connexion = get_db_connection()
+        curseur = connexion.cursor(pymysql.cursors.DictCursor)
+        
+        requete = """
             INSERT INTO messages (conversation_id, expediteur_id, contenu) 
             VALUES (%s, %s, %s)
         """
-        cur.execute(query, (conversation_id, expediteur_id, contenu))
-        conn.commit()
+        curseur.execute(requete, (conversation_id, expediteur_id, contenu))
+        connexion.commit()
         
         # Récupère l'ID du message qui vient d'être généré par MySQL
-        msg_id = cur.lastrowid
-        return {"id": msg_id}
+        message_id = curseur.lastrowid
+        return {"id": message_id}
         
     except Exception as e:
-        conn.rollback()
+        if connexion:
+            connexion.rollback()
         raise e
     finally:
-        cur.close()
-        conn.close()
+        if curseur:
+            curseur.close()
+        if connexion:
+            connexion.close()
+
 
 def obtenir_conversation(conversation_id):
-    """Récupère l'historique complet des messages d'une conversation spécifique."""
-    conn = get_db_connection()
-    cur = conn.cursor(pymysql.cursors.DictCursor)
-    
+    """
+    Récupère l'historique complet des messages d'une conversation spécifique.
+    Trié du plus ancien au plus récent pour le fil de discussion.
+    """
+    connexion = None
+    curseur = None
     try:
-        # Trié du plus ancien au plus récent pour le fil de discussion
-        query = """
-            SELECT id, conversation_id, expediteur_id, contenu, date_envoi 
+        connexion = get_db_connection()
+        curseur = connexion.cursor(pymysql.cursors.DictCursor)
+        
+        # CORRECTION : Utilisation de 'timestamp' à la place de 'date_envoi' pour correspondre à database.sql
+        requete = """
+            SELECT id, conversation_id, expediteur_id, contenu, timestamp 
             FROM messages 
             WHERE conversation_id = %s 
-            ORDER BY date_envoi ASC
+            ORDER BY timestamp ASC
         """
-        cur.execute(query, (conversation_id,))
-        rows = cur.fetchall()
+        curseur.execute(requete, (conversation_id,))
+        lignes = curseur.fetchall()
         
         # Formatage propre en dictionnaire pour le renvoyer facilement au frontend
         messages = []
-        for r in rows:
+        for ligne in lignes:
             messages.append({
-                "id": r["id"],
-                "conversation_id": r["conversation_id"],
-                "expediteur_id": r["expediteur_id"],
-                "contenu": r["contenu"],
-                "date_envoi": str(r["date_envoi"])  # Converti en chaîne pour éviter les bugs JSON avec le type DateTime
+                "id": ligne["id"],
+                "conversation_id": ligne["conversation_id"],
+                "expediteur_id": ligne["expediteur_id"],
+                "contenu": ligne["contenu"],
+                "timestamp": str(ligne["timestamp"])  # Conversion en chaîne pour éviter les bugs de sérialisation JSON
             })
         return messages
         
     except Exception as e:
         raise e
     finally:
-        cur.close()
-        conn.close()
+        if curseur:
+            curseur.close()
+        if connexion:
+            connexion.close()

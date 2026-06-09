@@ -104,4 +104,4 @@ def envoyer(data):
 if __name__ == "__main__":
     port_serveur = int(os.getenv("PORT", 5000))
     print(f"[*] Serveur MentorLink démarré sur le port {port_serveur} !")
-    socketio.run(app, host="0.0.0.0", port=port_serveur, debug=True) 
+    socketio.run(app, host="0.0.0.0", port=port_serveur, debug=True)
