@@ -1,10 +1,4 @@
-# ==============================================================================
-# PROJET MENTORLINK (PIL_2526_13)
-# Fichier : backend/models/match.py
-# Rôle : Gestion des correspondances mentor-étudiant
-# ==============================================================================
-
-import mysql.connector
+import pymysql
 from config.database import get_db_connection
 
 
@@ -12,75 +6,73 @@ def create_matching(etudiant_id, mentor_id, score):
     """
     Crée une nouvelle correspondance mentor-étudiant.
     """
-    conn = None
-    cur = None
+    connexion = None
+    curseur = None
 
     query = """
-        INSERT INTO matchings
-        (etudiant_id, mentor_id, score)
+        INSERT INTO matchings (etudiant_id, mentor_id, score)
         VALUES (%s, %s, %s);
     """
 
     try:
-        conn = get_db_connection()
-        cur = conn.cursor()
+        connexion = get_db_connection()
+        curseur = connexion.cursor(pymysql.cursors.DictCursor)
 
-        cur.execute(query, (etudiant_id, mentor_id, score))
-        conn.commit()
+        curseur.execute(query, (etudiant_id, mentor_id, score))
+        connexion.commit()
 
-        return cur.lastrowid
+        return curseur.lastrowid
 
-    except mysql.connector.Error as db_error:
-        if conn:
-            conn.rollback()
-        print(f"[ERROR SQL] {db_error.msg}")
+    except Exception as db_error:
+        if connexion:
+            connexion.rollback()
+        print(f"[ERROR SQL] {str(db_error)}")
         return None
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        if curseur:
+            curseur.close()
+        if connexion:
+            connexion.close()
 
 
 def get_matching_by_student(etudiant_id):
     """
     Retourne les correspondances d'un étudiant.
     """
-    conn = None
-    cur = None
+    connexion = None
+    curseur = None
 
     query = """
-        SELECT *
+        SELECT id, etudiant_id, mentor_id, score, statut, created_at, updated_at
         FROM matchings
         WHERE etudiant_id = %s;
     """
 
     try:
-        conn = get_db_connection()
-        cur = conn.cursor(dictionary=True)
+        connexion = get_db_connection()
+        curseur = connexion.cursor(pymysql.cursors.DictCursor)
 
-        cur.execute(query, (etudiant_id,))
+        curseur.execute(query, (etudiant_id,))
+        return curseur.fetchall()
 
-        return cur.fetchall()
-
-    except mysql.connector.Error as db_error:
-        print(f"[ERROR SQL] {db_error.msg}")
+    except Exception as db_error:
+        print(f"[ERROR SQL] {str(db_error)}")
         return []
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        if curseur:
+            curseur.close()
+        if connexion:
+            connexion.close()
 
 
 def update_matching_status(matching_id, statut):
     """
     Met à jour le statut d'un matching.
     """
-    conn = None
-    cur = None
+    connexion = None
+    curseur = None
 
     query = """
         UPDATE matchings
@@ -89,59 +81,60 @@ def update_matching_status(matching_id, statut):
     """
 
     try:
-        conn = get_db_connection()
-        cur = conn.cursor()
+        connexion = get_db_connection()
+        curseur = connexion.cursor(pymysql.cursors.DictCursor)
 
-        cur.execute(query, (statut, matching_id))
-        conn.commit()
+        # Sécurité : On s'assure que le statut envoyé est en minuscules et sans accents indésirables
+        statut_formate = statut.lower().replace('é', 'e')
 
+        curseur.execute(query, (statut_formate, matching_id))
+        connexion.commit()
         return True
 
-    except mysql.connector.Error as db_error:
-        if conn:
-            conn.rollback()
-        print(f"[ERROR SQL] {db_error.msg}")
+    except Exception as db_error:
+        if connexion:
+            connexion.rollback()
+        print(f"[ERROR SQL] {str(db_error)}")
         return False
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        if curseur:
+            curseur.close()
+        if connexion:
+            connexion.close()
 
 
 def get_matching_by_users(etudiant_id, mentor_id):
     """
     Vérifie qu'un matching accepté existe entre un étudiant et un mentor.
-    Utilisé par chat.py pour autoriser l'accès à une conversation.
+    Utilisé par le système de messagerie pour autoriser l'accès à une conversation.
     Retourne le matching si trouvé, None sinon.
     """
-    conn = None
-    cur = None
+    connexion = None
+    curseur = None
 
     query = """
         SELECT id
         FROM matchings
         WHERE etudiant_id = %s
           AND mentor_id = %s
-          AND statut = 'accepté'
+          AND statut = 'accepte'
         LIMIT 1;
     """
 
     try:
-        conn = get_db_connection()
-        cur = conn.cursor(dictionary=True)
+        connexion = get_db_connection()
+        curseur = connexion.cursor(pymysql.cursors.DictCursor)
 
-        cur.execute(query, (etudiant_id, mentor_id))
+        curseur.execute(query, (etudiant_id, mentor_id))
+        return curseur.fetchone()  # Renvoie le dictionnaire ou None si aucun match valide
 
-        return cur.fetchone()  # None si aucun match valide
-
-    except mysql.connector.Error as db_error:
-        print(f"[ERROR SQL] {db_error.msg}")
+    except Exception as db_error:
+        print(f"[ERROR SQL] {str(db_error)}")
         return None
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        if curseur:
+            curseur.close()
+        if connexion:
+            connexion.close()

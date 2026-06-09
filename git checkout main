@@ -1,0 +1,97 @@
+* [33m7fca410[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Harael mblk
+[31m|[m * [33mbe92db4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m modification de app.py
+[31m|[m * [33m7e90635[m mise à jour du chat
+[31m|[m * [33m428835f[m modification de app.py
+[31m|[m *   [33m28cbf84[m ajustement sur la structure
+[31m|[m [33m|[m[34m\[m  
+[31m|[m [33m|[m *   [33m56d9277[m verifications
+[31m|[m [33m|[m [35m|[m[36m\[m  
+[31m|[m [33m|[m [35m|[m *   [33meab15e6[m Mise à jour des offres
+[31m|[m [33m|[m [35m|[m [1;31m|[m[1;32m\[m  
+[31m|[m [33m|[m [35m|[m * [1;32m|[m [33m2e3e00c[m Amelioration du profil
+[31m|[m [33m|[m * [1;32m|[m [1;32m|[m   [33me99cbdb[m verifications
+[31m|[m [33m|[m [1;33m|[m[1;32m\[m [1;32m\[m [1;32m\[m  
+[31m|[m [33m|[m [1;33m|[m [1;32m|[m [1;32m|[m[1;32m/[m  
+[31m|[m [33m|[m [1;33m|[m [1;32m|[m[1;32m/[m[1;32m|[m   
+[31m|[m [33m|[m [1;33m|[m * [1;32m|[m [33m8ee033b[m suppression messages.py des routes
+[31m|[m [33m|[m * [1;34m|[m [1;32m|[m [33m89f373e[m verifs
+[31m|[m [33m|[m [1;35m|[m[1;34m\[m[1;34m|[m [1;32m|[m 
+[31m|[m [33m|[m [1;35m|[m * [1;32m|[m   [33mc84f7e9[m Merge branch 'main' of https://github.com/yoanehelmut/PIL_2526_13
+[31m|[m [33m|[m [1;35m|[m [31m|[m[32m\[m [1;32m\[m  
+[31m|[m [33m|[m [1;35m|[m * [32m|[m [1;32m|[m [33m620a3a8[m correction message.py mysql
+[31m|[m [33m|[m [1;35m|[m * [32m|[m [1;32m|[m [33m3f93c42[m remplacement psycopg2 par mysql.connector
+[31m|[m [33m|[m * [32m|[m [32m|[m [1;32m|[m [33mdcf5fc6[m Sauvegarde de mon app.py avant le pull
+[31m|[m [33m|[m * [32m|[m [32m|[m [1;32m|[m [33mf499626[m Finition des verifications database.sql, .env, database.py, usr.py, auth.py, app.py
+[31m|[m * [32m|[m [32m|[m [32m|[m [1;32m|[m [33mdb4d21d[m modification de app.py
+[31m|[m [32m|[m [32m|[m[32m_[m[32m|[m[32m/[m [1;32m/[m  
+[31m|[m [32m|[m[32m/[m[32m|[m [32m|[m [1;32m|[m   
+[31m|[m * [32m|[m [32m|[m [1;32m|[m   [33m37f8964[m Merge branch 'main' of https://github.com/yoanehelmut/PIL_2526_13 # Please enter a commit message to explain why this merge is necessary, # especially if it merges an updated upstream into a topic branch. # # Lines starting with '#' will be ignored, and an empty message aborts # the commit.
+[31m|[m [33m|[m[34m\[m [32m\[m [32m\[m [1;32m\[m  
+[31m|[m [33m|[m * [32m|[m [32m|[m [1;32m|[m [33ma821706[m Ajout des fonctionnalités des offres de demande
+[31m|[m [33m|[m * [32m|[m [32m|[m [1;32m|[m   [33m7f0d399[m Ajout des fonctionnalités de demande
+[31m|[m [33m|[m [35m|[m[32m\[m [32m\[m [32m\[m [1;32m\[m  
+[31m|[m [33m|[m [35m|[m [32m|[m [32m|[m[32m/[m [1;32m/[m  
+[31m|[m [33m|[m [35m|[m [32m|[m[32m/[m[32m|[m [1;32m|[m   
+[31m|[m [33m|[m * [32m|[m [32m|[m [1;32m|[m [33me032a5a[m Mise à jour des offres de demande
+[31m|[m * [36m|[m [32m|[m [32m|[m [1;32m|[m   [33m83525af[m ajustement sur la structure
+[31m|[m [1;31m|[m[32m\[m [36m\[m [32m\[m [32m\[m [1;32m\[m  
+[31m|[m [1;31m|[m [32m|[m [36m|[m[32m/[m [32m/[m [1;32m/[m  
+[31m|[m [1;31m|[m [32m|[m[32m/[m[36m|[m [32m|[m [1;32m|[m   
+[31m|[m [1;31m|[m * [36m|[m [32m|[m [1;32m|[m   [33m70ef69a[m résolution du conflit
+[31m|[m [1;31m|[m [1;33m|[m[1;34m\[m [36m\[m [32m\[m [1;32m\[m  
+[31m|[m [1;31m|[m [1;33m|[m * [36m\[m [32m\[m [1;32m\[m   [33md74c97c[m Merge pull request #2 from yoanehelmut/rinaldi-messagerie
+[31m|[m [1;31m|[m [1;33m|[m [36m|[m[1;36m\[m [36m\[m [32m\[m [1;32m\[m  
+[31m|[m [1;31m|[m [1;33m|[m [36m|[m [1;36m|[m[36m/[m [32m/[m [1;32m/[m  
+[31m|[m [1;31m|[m [1;33m|[m [36m|[m[36m/[m[1;36m|[m [32m|[m [1;32m|[m   
+[31m|[m [1;31m|[m [1;33m|[m * [1;36m|[m [32m|[m [1;32m|[m [33ma8186cb[m feat: ajout offre_demande et modification auth
+[31m|[m [1;31m|[m [1;33m|[m [1;32m|[m [1;36m|[m[1;32m_[m[32m|[m[1;32m/[m  
+[31m|[m [1;31m|[m [1;33m|[m [1;32m|[m[1;32m/[m[1;36m|[m [32m|[m   
+[31m|[m [1;31m|[m [1;33m|[m * [1;36m|[m [32m|[m [33mf1fbdf0[m Mise à jour des offres
+[31m|[m [1;31m|[m [1;33m|[m [32m|[m [1;36m|[m[32m/[m  
+[31m|[m [1;31m|[m [1;33m|[m [32m|[m[32m/[m[1;36m|[m   
+[31m|[m [1;31m|[m [1;33m|[m * [1;36m|[m [33m6924cd5[m Mise à jour de database.py avec pymysql, database.py et synchronisation .env
+[31m|[m [1;31m|[m * [1;36m|[m [1;36m|[m [33mfab2869[m clean: suppression définitive des doublons à la racine
+[31m|[m [1;31m|[m * [1;36m|[m [1;36m|[m [33m1bfc1bf[m Suppression des fichiers et dossiers doublons à la racine
+[31m|[m [1;31m|[m [1;36m|[m [1;36m|[m[1;36m/[m  
+[31m|[m [1;31m|[m [1;36m|[m[1;36m/[m[1;36m|[m   
+[31m|[m [1;31m|[m * [1;36m|[m [33md9e8b77[m[33m ([m[1;31morigin/rinaldi-messagerie[m[33m)[m feat: ajout templates messagerie et requirements
+[31m|[m [1;31m|[m * [1;36m|[m [33m3379281[m feat: ajout interface messagerie HTML
+[31m|[m [1;31m|[m * [1;36m|[m [33m8971ff6[m feat: ajout app.py Flask-SocketIO messagerie
+[31m|[m [1;31m|[m * [1;36m|[m [33m03d4378[m fix: adaptation messages.py au schema SQL existant
+[31m|[m [1;31m|[m * [1;36m|[m [33mc380631[m Fix: correction messagerie et gestion erreurs DB
+[31m|[m [1;31m|[m * [1;36m|[m [33mb71652d[m fix: correction fin de code messages.py
+[31m|[m [1;31m|[m * [1;36m|[m [33m4128e8b[m fix: correction fin de code messages.py
+[31m|[m [1;31m|[m * [1;36m|[m [33m0f5012a[m fix: correction fin de code messages.py
+[31m|[m [1;31m|[m * [1;36m|[m [33m0933bb6[m feat: ajout module messagerie Flask
+[31m|[m [1;31m|[m [1;36m|[m [1;36m|[m * [33m77d4f51[m[33m ([m[1;35mrefs/stash[m[33m)[m WIP on main: 83de5f8 ajustements fait sur la structure
+[31m|[m [1;31m|[m [1;36m|[m[1;31m_[m[1;36m|[m[1;31m/[m[32m|[m 
+[31m|[m [1;31m|[m[1;31m/[m[1;36m|[m [1;36m|[m [32m|[m 
+[31m|[m [1;31m|[m [1;36m|[m [1;36m|[m * [33maee49e8[m index on main: 83de5f8 ajustements fait sur la structure
+[31m|[m [1;31m|[m [1;36m|[m[1;31m_[m[1;36m|[m[1;31m/[m  
+[31m|[m [1;31m|[m[1;31m/[m[1;36m|[m [1;36m|[m   
+[31m|[m * [1;36m|[m [1;36m|[m [33m83de5f8[m ajustements fait sur la structure
+[31m|[m [1;36m|[m [1;36m|[m[1;36m/[m  
+[31m|[m [1;36m|[m[1;36m/[m[1;36m|[m   
+[31m|[m * [1;36m|[m [33m3a888ea[m correction d'erreurs dans la base de donnees
+[31m|[m * [1;36m|[m [33m8178dfa[m creation de models/offer.py
+[31m|[m * [1;36m|[m   [33mb6483e8[m Mise à jour de user.py avec des noms de variables explicites et gestion MySQL de production
+[31m|[m [33m|[m[34m\[m [1;36m\[m  
+[31m|[m [33m|[m * [1;36m|[m [33md8bb3ac[m Travail sur app.py,routes/auth.py,config/database.py et config/config.py
+[31m|[m * [34m|[m [1;36m|[m [33mfb21136[m Mise à jour de user.py avec des noms de variables explicites et gestion MySQL de production (encore !)
+[31m|[m [34m|[m[34m/[m [1;36m/[m  
+[31m|[m * [1;36m|[m [33madb6727[m Mise à jour de user.py avec des noms de variables explicites et gestion MySQL de production
+[31m|[m * [1;36m|[m [33m0e44ebc[m Mise à jour des profils2
+[31m|[m * [1;36m|[m [33mb573b3c[m Mise à jour du profil
+[31m|[m * [1;36m|[m [33m948c3fc[m[33m ([m[1;32mfeature/auth[m[33m)[m Travail sur app.py,routes/auth.py,config/database.py et config/config.py
+[31m|[m * [1;36m|[m [33m2714743[m[33m ([m[1;31morigin/feature/auth[m[33m)[m Amelioration de la structure
+[31m|[m * [1;36m|[m [33md1c630d[m script d'inscription et de connexion
+[31m|[m * [1;36m|[m [33m519447a[m Apport d'amelioration à la base de données
+[31m|[m * [1;36m|[m [33mee921d9[m Suppression du fichier SQL
+[31m|[m[31m/[m [1;36m/[m  
+* [1;36m|[m [33m64f62ed[m Amelioration de la base de données
+* [1;36m|[m [33m97d2d5e[m[33m ([m[1;31morigin/john/auth-profil[m[33m)[m Intégration complète du module d'authentification et gestion MySQL
+[1;36m|[m[1;36m/[m  
+* [33m93d69e3[m Update database.sql
+* [33m44d62d7[m Ajout du script SQL de creation de base de donnees
+* [33m87c27a8[m Ajout du script SQL de creation de base de donnees
+* [33m61a043e[m Initialisation de l'arborescence officielle du projet
