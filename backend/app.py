@@ -1,10 +1,10 @@
-<<<<<<< HEAD
 import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
+import pymysql # Importation nécessaire pour spécifier le type de curseur
 
 # 1. Chargement des variables d'environnement (.env)
 load_dotenv()
@@ -59,8 +59,9 @@ def envoyer(data):
     curseur = None
     try:
         connexion = get_db_connection()
-        curseur = connexion.cursor()
-       
+        # CORRECTION : On force l'utilisation du DictCursor pour être en accord avec config/database.py
+        curseur = connexion.cursor(pymysql.cursors.DictCursor)
+        
         # Requête d'insertion standard
         requete = """
             INSERT INTO messages (conversation_id, expediteur_id, contenu)
@@ -68,16 +69,22 @@ def envoyer(data):
         """
         curseur.execute(requete, (data["conversation_id"], data["expediteur_id"], data["contenu"]))
         connexion.commit()
-       
+        
         message_id = curseur.lastrowid
-       
+        
+        # OPTIMISATION : On récupère le timestamp créé automatiquement par MySQL pour le renvoyer au front
+        curseur.execute("SELECT timestamp FROM messages WHERE id = %s", (message_id,))
+        resultat = curseur.fetchone()
+        timestamp_str = str(resultat["timestamp"]) if resultat else ""
+        
         # Diffusion instantanée du message à tous les membres du salon
         emit("nouveau_message", {
             "id": message_id,
             "conversation_id": data["conversation_id"],
             "expediteur_id": data["expediteur_id"],  
             "expediteur_nom": data["expediteur_nom"],
-            "contenu": data["contenu"]
+            "contenu": data["contenu"],
+            "timestamp": timestamp_str
         }, room=str(data["conversation_id"]))
 
     except Exception as e:
@@ -96,5 +103,3 @@ if __name__ == "__main__":
     port_serveur = int(os.getenv("PORT", 5000))
     print(f"[*] Serveur MentorLink démarré sur le port {port_serveur} !")
     socketio.run(app, host="0.0.0.0", port=port_serveur, debug=True)
-=======
->>>>>>> 56d92778bd47c976731c5e7bf63db9f6fb85eda3
