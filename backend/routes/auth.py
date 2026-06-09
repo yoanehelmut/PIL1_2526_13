@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import re
 import logging
 import pymysql
@@ -11,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 EMAIL_REGEX = r"^[\w\.-]+@[\w\.-]+\.\w{2,}$"
 
-# CORRIGÉ : Alignement strict sur l'ENUM de ta table MySQL
+# Alignement strict sur l'ENUM de ta table MySQL
 ALLOWED_ROLES = {"mentor", "etudiant"}
 
 # 🔹 REGISTER
@@ -22,7 +21,7 @@ def register():
     if not data:
         return jsonify({"message": "JSON invalide"}), 400
 
-    # CORRIGÉ : Utilisation des colonnes de ta table users
+    # Utilisation des colonnes réelles de ta table users
     nom = data.get("nom", "").strip()
     prenom = data.get("prenom", "").strip()
     email = data.get("email", "").strip().lower()
@@ -58,7 +57,7 @@ def register():
 
         hashed = generate_password_hash(password)
 
-        # CORRIGÉ : Requête SQL calquée sur ta structure réelle
+        # Requête SQL calquée sur ta structure réelle
         cur.execute("""
             INSERT INTO users(nom, prenom, email, mot_de_passe_hash, role, filiere, niveau)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -68,7 +67,8 @@ def register():
         return jsonify({"message": "Utilisateur créé"}), 201
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         logger.error("Erreur register: %s", e)
         return jsonify({"message": "Erreur serveur"}), 500
     finally:
@@ -91,18 +91,18 @@ def login():
         return jsonify({"message": "Champs manquants"}), 400
 
     conn = get_db_connection()
-    # CORRIGÉ : On force le DictCursor pour pouvoir manipuler les clés textuelles
+    # On force le DictCursor pour manipuler les clés textuelles
     cur = conn.cursor(pymysql.cursors.DictCursor)
 
     try:
         cur.execute("SELECT * FROM users WHERE email=%s", (email,))
         user = cur.fetchone()
 
-        # CORRIGÉ : Vérification avec 'mot_de_passe_hash'
+        # Vérification avec 'mot_de_passe_hash'
         if not user or not check_password_hash(user["mot_de_passe_hash"], password):
             return jsonify({"message": "Identifiants incorrects"}), 401
 
-        # CORRIGÉ : Données de session synchronisées
+        # Données de session synchronisées
         session["user_id"] = user["id"]
         session["user_nom"] = user["nom"]
         session["user_prenom"] = user["prenom"]
@@ -136,32 +136,4 @@ def me():
 @auth_bp.route("/logout", methods=["POST"])
 def logout():
     session.clear()
-<<<<<<< HEAD
-    return jsonify({"message": "Déconnecté"})
-=======
-    return jsonify({"message": "Déconnecté"})
-
-
-=======
-from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
-from models.user import *
-@auth_bp.route("/register", methods=["POST"])
-def register():
-    data = request.get_json()
-    nom = data["nom"]
-    E_mail = data["E-mail"]
-    Mot_de_passe = data["Mot_de_passe"]
-    Rôle = data["Rôle"]
-    if not nom or E_mail or Mot_de_passe or Rôle:
-        return jsonify({ "error": "Tous les champs sont obligatoires"})
-    user_exist = user.query.filter_by(E_mail=E_mail).first()
-    if user_exist:
-        return jsonify({"error": "Cet e-mail existe déjà"}), 409
-    if len (Mot_de_passe) < 6:
-        return jsonify({"error": "Mot de passe trop court"}), 400
-    hashed_password = generate_password_hash(password)
-    new_user = User(E_mail=E_mail, password=hashed_password)
-    
->>>>>>> f886a4d (feat: ajout offre_demande et modification auth)
->>>>>>> c84f7e96a267d9cf97a6c3131606b843eace6625
+    return jsonify({"message": "Déconnecté"}), 200

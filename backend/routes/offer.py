@@ -9,7 +9,7 @@ from models.offre_demande import (
 )
 
 offer_bp = Blueprint("offer", __name__, url_prefix="/offers")
-
+w
 
 # =====================================================
 # 1. Créer une offre ou une demande
