@@ -7,7 +7,7 @@ profile_bp = Blueprint('profile', __name__)
 
 # Valeurs autorisées
 NIVEAUX_VALIDES = ['L1', 'L2', 'L3', 'M1', 'M2']
-FILIERES_VALIDES = ['Informatique', 'Mathématiques', 'Physique', 'Économie', 'Droit']  # adapte selon ton projet
+FILIERES_VALIDES = ['Informatique', 'Mathématiques', 'Physique', 'Économie', 'Droit']  
 BIO_MAX_LENGTH = 500
 TELEPHONE_MAX_LENGTH = 20
 
