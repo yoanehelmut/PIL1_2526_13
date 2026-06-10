@@ -2,67 +2,92 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matching - MentorLink</title>
-    <link rel="stylesheet" href="../static/css/style .css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+        }
+
         .matching-container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 40px auto;
             padding: 0 20px;
         }
 
-        .matching-container h2 {
+        .matching-header {
             text-align: center;
-            font-size: 1.8rem;
-            color: #1a1a2e;
-            margin-bottom: 6px;
-        }
-
-        .matching-container .subtitle {
-            text-align: center;
-            color: #666;
             margin-bottom: 30px;
         }
 
-        .filtres {
-            background: white;
-            border-radius: 14px;
-            padding: 20px 24px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            margin-bottom: 28px;
+        .matching-header h2 {
+            font-size: 2rem;
+            color: #1a1a2e;
+            margin-bottom: 8px;
             display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            align-items: flex-end;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
         }
 
-        .filtres .form-group {
+        .matching-header .subtitle {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        /* Filtres */
+        .filters-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 16px;
+            align-items: end;
+        }
+
+        .filter-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            flex: 1;
-            min-width: 150px;
+            gap: 6px;
         }
 
-        .filtres label {
-            font-size: 0.82rem;
-            font-weight: bold;
+        .filter-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
             color: #444;
         }
 
-        .filtres select,
-        .filtres input {
-            padding: 9px 12px;
+        .filter-group input,
+        .filter-group select {
+            padding: 10px 14px;
             border: 1.5px solid #e0e0e0;
             border-radius: 8px;
             font-size: 0.9rem;
-            font-family: Arial;
-            width: 100%;
-            box-sizing: border-box;
-            margin: 0;
+            transition: border-color 0.2s;
+            outline: none;
         }
 
-        .filtres button {
+        .filter-group input:focus,
+        .filter-group select:focus {
+            border-color: #0d6efd;
+        }
+
+        .search-btn {
             background: #0d6efd;
             color: white;
             border: none;
@@ -70,20 +95,34 @@
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.95rem;
-            width: auto;
-            align-self: flex-end;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+            height: fit-content;
         }
 
-        .results-title {
-            font-size: 1rem;
+        .search-btn:hover {
+            background: #0b5ed7;
+        }
+
+        /* Résultats */
+        .results-info {
+            font-size: 0.95rem;
             color: #555;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            padding-left: 4px;
+        }
+
+        .results-info strong {
+            color: #0d6efd;
         }
 
         .mentor-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
         }
 
         .mentor-card {
@@ -91,11 +130,10 @@
             border-radius: 16px;
             padding: 24px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin: 0;
+            gap: 14px;
         }
 
         .mentor-card:hover {
@@ -113,34 +151,63 @@
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background: #e7f0ff;
+            background: linear-gradient(135deg, #0d6efd, #00c6ff);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 26px;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
             flex-shrink: 0;
-            border: 2px solid #0d6efd;
         }
 
         .card-info h4 {
-            margin: 0 0 3px;
-            font-size: 1rem;
+            margin: 0 0 4px;
+            font-size: 1.05rem;
             color: #1a1a2e;
         }
 
-        .card-info p {
-            margin: 0;
+        .card-info .meta {
             font-size: 0.82rem;
             color: #888;
-        }
-
-        .score-bar-wrapper {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
+            flex-wrap: wrap;
         }
 
-        .score-bar-wrapper span {
+        .badge-filiere {
+            background: #e7f0ff;
+            color: #0d6efd;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.72rem;
+            font-weight: bold;
+        }
+
+        .role-badge {
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        .role-badge.mentor {
+            color: #0d6efd;
+        }
+
+        .role-badge.mentore {
+            color: #28a745;
+        }
+
+        /* Score bar */
+        .score-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .score-label {
             font-size: 0.82rem;
             color: #555;
             white-space: nowrap;
@@ -164,11 +231,13 @@
         .score-pct {
             font-weight: bold;
             color: #0d6efd;
-            font-size: 0.9rem;
-            white-space: nowrap;
+            font-size: 0.95rem;
+            min-width: 40px;
+            text-align: right;
         }
 
-        .competences-commun {
+        /* Compétences */
+        .competences {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
@@ -178,17 +247,21 @@
             background: #e7f0ff;
             color: #0d6efd;
             border-radius: 12px;
-            padding: 3px 10px;
+            padding: 4px 10px;
             font-size: 0.78rem;
+            font-weight: 500;
         }
 
         .dispo-line {
             font-size: 0.82rem;
             color: #555;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .dispo-line span {
-            font-weight: bold;
+            font-weight: 600;
             color: #0d6efd;
         }
 
@@ -196,166 +269,286 @@
             background: #0d6efd;
             color: white;
             border: none;
-            padding: 9px;
+            padding: 10px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.9rem;
+            font-weight: 500;
             width: 100%;
             margin-top: auto;
             transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .contact-btn:hover { background: #0b5ed7; }
-
-        .badge-filiere-small {
-            background: #e7f0ff;
-            color: #0d6efd;
-            border-radius: 12px;
-            padding: 2px 8px;
-            font-size: 0.75rem;
-            font-weight: bold;
+        .contact-btn:hover {
+            background: #0b5ed7;
         }
 
+        /* Empty state */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #aaa;
             font-size: 1.1rem;
+            grid-column: 1 / -1;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0d6efd;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            .mentor-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-
 <nav>
     <h1 class="logo">MentorLink🎓</h1>
     <div style="margin-top:15px">
-        <a class="btn" href="../templates/profile.html">Mon Profil</a>
-        <a class="btn" href="../templates/offers.html">Offres</a>
-        <a class="btn" href="../templates/chat.html">Messages</a>
+        <a class="btn" href="/profile">Mon Profil</a>
+        <a class="btn" href="/offers">Offres</a>
+        <a class="btn" href="/chat">Messages</a>
     </div>
 </nav>
 
 <div class="matching-container">
-    <h2>🔗 Matching Mentor / Mentoré</h2>
-    <p class="subtitle">Trouvez les correspondances les plus compatibles avec votre profil</p>
-
-    <!-- Filtres -->
-    <div class="filtres">
-        <div class="form-group">
-            <label>Matière / Compétence</label>
-            <input type="text" id="filtreMatiere" placeholder="Ex: Python, SQL...">
-        </div>
-        <div class="form-group">
-            <label>Filière</label>
-            <select id="filtreFiliere">
-                <option value="">Toutes</option>
-                <option>IA</option>
-                <option>IM</option>
-                <option>GL</option>
-                <option>SE&IoT</option>
-                <option>SI</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Type</label>
-            <select id="filtreType">
-                <option value="">Mentor & Mentoré</option>
-                <option value="mentor">Mentor</option>
-                <option value="mentore">Mentoré</option>
-            </select>
-        </div>
-        <button onclick="filtrer()">🔍 Rechercher</button>
+    <div class="matching-header">
+        <h2>🔗 Matching Mentor / Mentoré</h2>
+        <p class="subtitle">Trouvez les correspondances les plus compatibles avec votre profil</p>
     </div>
 
-    <p class="results-title" id="resultsTitle">4 correspondances trouvées pour vous</p>
+    <!-- Filtres -->
+    <div class="filters-card">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label>Matière / Compétence</label>
+                <input type="text" id="filtreMatiere" placeholder="Ex: Python, SQL...">
+            </div>
+            <div class="filter-group">
+                <label>Filière</label>
+                <select id="filtreFiliere">
+                    <option value="">Toutes</option>
+                    <option>IA</option>
+                    <option>IM</option>
+                    <option>GL</option>
+                    <option>SE&IoT</option>
+                    <option>SI</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Type</label>
+                <select id="filtreType">
+                    <option value="">Mentor & Mentoré</option>
+                    <option value="mentor">Mentor</option>
+                    <option value="etudiant">Mentoré</option>
+                </select>
+            </div>
+            <button class="search-btn" onclick="filtrer()">
+                 Rechercher
+            </button>
+        </div>
+    </div>
 
-    <div class="mentor-grid" id="mentorGrid"></div>
+    <!-- Résultats -->
+    <p class="results-info" id="resultsInfo">Chargement des correspondances...</p>
+    <div class="mentor-grid" id="mentorGrid">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Recherche des meilleurs profils pour vous...</p>
+        </div>
+    </div>
 </div>
 
 <script>
-    const data = [
-        {
-            nom: "Kofi Mensah", filiere: "IA", niveau: "Licence 2", type: "mentor",
-            avatar: "👨‍💻", score: 92,
-            competences: ["Python", "Machine Learning", "Algorithmique"],
-            dispo: "Lun, Mer, Ven · 14h-18h"
-        },
-        {
-            nom: "Aïcha Traoré", filiere: "GL", niveau: "Licence 3", type: "mentor",
-            avatar: "👩‍💻", score: 85,
-            competences: ["SQL", "Base de données", "Java"],
-            dispo: "Mar, Jeu · 10h-12h"
-        },
-        {
-            nom: "Brice Hounkpè", filiere: "SI", niveau: "Licence 2", type: "mentore",
-            avatar: "👨‍🎓", score: 78,
-            competences: ["Réseau", "Linux"],
-            dispo: "Sam · 9h-13h"
-        },
-        {
-            nom: "Fatou Diallo", filiere: "IM", niveau: "Licence 1", type: "mentore",
-            avatar: "👩‍🎓", score: 70,
-            competences: ["HTML/CSS", "JavaScript"],
-            dispo: "Lun, Ven · 16h-19h"
-        },
-    ];
+    let allMatches = [];
+    let currentUser = null;
 
-    function renderCards(liste) {
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', async () => {
+        await checkAuth();
+        await loadMatches();
+    });
+
+    // Vérifier l'authentification
+    async function checkAuth() {
+        try {
+            const response = await fetch('/api/auth/me', { credentials: 'include' });
+            if (!response.ok) {
+                window.location.href = '/login';
+                return;
+            }
+            currentUser = await response.json();
+        } catch (error) {
+            console.error('Erreur auth:', error);
+            window.location.href = '/login';
+        }
+    }
+
+    // Charger les matchs depuis le backend
+    async function loadMatches() {
         const grid = document.getElementById('mentorGrid');
-        const title = document.getElementById('resultsTitle');
-        grid.innerHTML = '';
-        title.textContent = liste.length + ' correspondance(s) trouvée(s)';
+        const info = document.getElementById('resultsInfo');
 
-        if (liste.length === 0) {
-            grid.innerHTML = '<div class="empty-state">😕 Aucun résultat trouvé. Essayez d\'autres filtres.</div>';
+        try {
+            const response = await fetch('/api/matching', { credentials: 'include' });
+            
+            if (response.ok) {
+                allMatches = await response.json();
+                renderMatches(allMatches);
+            } else {
+                // Fallback : données de démo si l'API n'est pas prête
+                allMatches = getDemoMatches();
+                renderMatches(allMatches);
+            }
+        } catch (error) {
+            console.error('Erreur chargement matches:', error);
+            allMatches = getDemoMatches();
+            renderMatches(allMatches);
+        }
+    }
+
+    // Données de démo (uniquement si l'API échoue)
+    function getDemoMatches() {
+        return [
+            {
+                id: 1, nom: "Utilisateur 1", prenom: "Test",
+                filiere: "IA", niveau: "L2", role: "mentor",
+                score: 92,
+                competences: ["Python", "Machine Learning", "Algorithmique"],
+                disponibilites: "Lun, Mer, Ven · 14h-18h"
+            },
+            {
+                id: 2, nom: "Utilisateur 2", prenom: "Demo",
+                filiere: "GL", niveau: "L3", role: "mentor",
+                score: 85,
+                competences: ["SQL", "Base de données", "Java"],
+                disponibilites: "Mar, Jeu · 10h-12h"
+            }
+        ];
+    }
+
+    // Afficher les matchs
+    function renderMatches(matches) {
+        const grid = document.getElementById('mentorGrid');
+        const info = document.getElementById('resultsInfo');
+
+        info.innerHTML = `<strong>${matches.length}</strong> correspondance(s) trouvée(s)`;
+
+        if (matches.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon"></div>
+                    <p>Aucun résultat trouvé. Essayez d'autres filtres.</p>
+                </div>
+            `;
             return;
         }
 
-        liste.forEach(m => {
-            const card = document.createElement('div');
-            card.className = 'mentor-card';
-            card.innerHTML = `
-                <div class="card-top">
-                    <div class="avatar">${m.avatar}</div>
-                    <div class="card-info">
-                        <h4>${m.nom}</h4>
-                        <p>${m.niveau} &nbsp; <span class="badge-filiere-small">${m.filiere}</span></p>
-                        <p style="color:${m.type==='mentor'?'#0d6efd':'#28a745'};font-weight:bold;margin-top:3px">
-                            ${m.type === 'mentor' ? '🎓 Mentor' : '📖 Mentoré'}
-                        </p>
+        grid.innerHTML = matches.map(m => {
+            const initials = (m.prenom?.charAt(0) || '') + (m.nom?.charAt(0) || '');
+            const roleLabel = m.role === 'mentor' ? '🎓 Mentor' : ' Mentoré';
+            const roleClass = m.role === 'mentor' ? 'mentor' : 'mentore';
+
+            return `
+                <div class="mentor-card">
+                    <div class="card-top">
+                        <div class="avatar">${initials.toUpperCase()}</div>
+                        <div class="card-info">
+                            <h4>${m.prenom || ''} ${m.nom || ''}</h4>
+                            <div class="meta">
+                                ${m.niveau || ''} 
+                                <span class="badge-filiere">${m.filiere || ''}</span>
+                            </div>
+                            <span class="role-badge ${roleClass}">${roleLabel}</span>
+                        </div>
                     </div>
+
+                    <div class="score-section">
+                        <span class="score-label">Compatibilité</span>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: ${m.score || 0}%"></div>
+                        </div>
+                        <span class="score-pct">${m.score || 0}%</span>
+                    </div>
+
+                    ${m.competences && m.competences.length > 0 ? `
+                        <div class="competences">
+                            ${m.competences.map(c => `<span class="tag-small">${c}</span>`).join('')}
+                        </div>
+                    ` : ''}
+
+                    ${m.disponibilites ? `
+                        <div class="dispo-line">🕐 <span>${m.disponibilites}</span></div>
+                    ` : ''}
+
+                    <button class="contact-btn" onclick="contacter(${m.id})">
+                        💬 Contacter
+                    </button>
                 </div>
-                <div class="score-bar-wrapper">
-                    <span>Compatibilité</span>
-                    <div class="score-bar"><div class="score-fill" style="width:${m.score}%"></div></div>
-                    <span class="score-pct">${m.score}%</span>
-                </div>
-                <div class="competences-commun">
-                    ${m.competences.map(c => `<span class="tag-small">${c}</span>`).join('')}
-                </div>
-                <div class="dispo-line">🕐 <span>${m.dispo}</span></div>
-                <button class="contact-btn" onclick="window.location.href='messagerie.html'">💬 Contacter</button>
             `;
-            grid.appendChild(card);
-        });
+        }).join('');
     }
 
+    // Filtrer les matchs
     function filtrer() {
         const matiere = document.getElementById('filtreMatiere').value.toLowerCase();
         const filiere = document.getElementById('filtreFiliere').value;
         const type = document.getElementById('filtreType').value;
 
-        const result = data.filter(m => {
-            const matchMatiere = !matiere || m.competences.some(c => c.toLowerCase().includes(matiere));
+        const result = allMatches.filter(m => {
+            const matchMatiere = !matiere || 
+                (m.competences && m.competences.some(c => c.toLowerCase().includes(matiere))) ||
+                (m.matiere && m.matiere.toLowerCase().includes(matiere));
             const matchFiliere = !filiere || m.filiere === filiere;
-            const matchType = !type || m.type === type;
+            const matchType = !type || m.role === type;
             return matchMatiere && matchFiliere && matchType;
         });
 
-        renderCards(result);
+        renderMatches(result);
     }
 
-    renderCards(data);
+    // Contacter un mentor/mentoré
+    function contacter(userId) {
+        const match = allMatches.find(m => m.id === userId);
+        if (match) {
+            // Redirection vers la page de chat avec l'ID de l'utilisateur
+            window.location.href = `/chat?user_id=${userId}`;
+        }
+    }
 </script>
 </body>
 </html>

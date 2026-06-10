@@ -1,59 +1,423 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Inscription</title>
-<link rel="stylesheet" href="../static/css/style .css">
+    <meta charset="UTF-8">
+    <title>Inscription - MentorLink</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .register-container {
+            max-width: 650px;
+            margin: 20px auto;
+        }
+        .register-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .register-header h1 {
+            color: #0d6efd;
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .register-header p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 6px 25px rgba(13, 110, 253, 0.08);
+            margin-bottom: 20px;
+        }
+        .section-card h3 {
+            color: #0d6efd;
+            font-size: 1.15rem;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #e3f2fd;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #084298;
+        }
+        .form-group input,
+        .form-group select {
+            padding: 11px 14px;
+            border: 2px solid #e3f2fd;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #0d6efd;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+        .tags-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 14px;
+            background: #f0f7ff;
+            border: 2px dashed #bbdefb;
+            border-radius: 12px;
+            min-height: 55px;
+            margin-bottom: 10px;
+        }
+        .tag {
+            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+            color: white;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tag.lacune {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+        .tag .x {
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0.8;
+        }
+        .tag .x:hover { opacity: 1; }
+        .tag-row {
+            display: flex;
+            gap: 8px;
+        }
+        .tag-row input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid #e3f2fd;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        .tag-row input:focus {
+            border-color: #0d6efd;
+            outline: none;
+        }
+        .tag-row button {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .tag-row button:hover {
+            background: #0b5ed7;
+            transform: translateY(-2px);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 6px 20px rgba(13, 110, 253, 0.3);
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(13, 110, 253, 0.4);
+        }
+        .submit-btn:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+        .message {
+            display: none;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .login-link a {
+            color: #0d6efd;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .help-text {
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
-
 <body>
 
-    <nav>
-    <h1 class="logo">MentorLink🎓</h1>
-    </nav>
+<div class="register-container">
+    <div class="register-header">
+        <h1>🎓 MentorLink</h1>
+        <p>Créez votre compte pour rejoindre la communauté</p>
+    </div>
 
-<div class="card">
+    <form id="registerForm">
+        <!-- SECTION 1 : Informations personnelles -->
+        <div class="section-card">
+            <h3>👤 Informations personnelles</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nom *</label>
+                    <input type="text" id="nom" placeholder="Votre nom" required>
+                </div>
+                <div class="form-group">
+                    <label>Prénom *</label>
+                    <input type="text" id="prenom" placeholder="Votre prénom" required>
+                </div>
+            </div>
+            <div class="form-group" style="margin-bottom:16px">
+                <label>Email *</label>
+                <input type="email" id="email" placeholder="votre@email.com" required>
+            </div>
+            <div class="form-group" style="margin-bottom:16px">
+                <label>Mot de passe * (8 caractères minimum)</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Filière *</label>
+                    <select id="filiere" required>
+                        <option value="">-- Choisir --</option>
+                        <option value="IA">IA</option>
+                        <option value="IM">IM</option>
+                        <option value="GL">GL</option>
+                        <option value="SE&IoT">SE&IoT</option>
+                        <option value="SI">SI</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Niveau *</label>
+                    <select id="niveau" required>
+                        <option value="">-- Choisir --</option>
+                        <option value="L1">Licence 1</option>
+                        <option value="L2">Licence 2</option>
+                        <option value="L3">Licence 3</option>
+                        <option value="M1">Master 1</option>
+                        <option value="M2">Master 2</option>
+                    </select>
+                </div>
+            </div>
+        </div>
 
-<h2>Inscription</h2>
+        <!-- SECTION 2 : Mes compétences -->
+        <div class="section-card">
+            <h3>💪 Mes compétences</h3>
+            <p class="help-text">Ajoutez les matières que vous maîtrisez (ex: Python, SQL, Algorithmique...)</p>
+            <div class="tags-box" id="tagsCompetences"></div>
+            <div class="tag-row">
+                <input type="text" id="inputCompetence" placeholder="Ex: Python, SQL...">
+                <button type="button" onclick="ajouterCompetence()">+ Ajouter</button>
+            </div>
+        </div>
 
-<form>
+        <!-- SECTION 3 : Mes lacunes / difficultés -->
+        <div class="section-card">
+            <h3>📚 Mes lacunes / difficultés</h3>
+            <p class="help-text">Ajoutez les matières où vous avez besoin d'aide (ex: Réseau, Maths...)</p>
+            <div class="tags-box" id="tagsLacunes"></div>
+            <div class="tag-row">
+                <input type="text" id="inputLacune" placeholder="Ex: Réseau, Maths...">
+                <button type="button" onclick="ajouterLacune()">+ Ajouter</button>
+            </div>
+        </div>
 
-<input type="text" placeholder="Nom">
+        <button type="submit" class="submit-btn" id="submitBtn">
+            ✅ Créer mon compte
+        </button>
+        <div class="message" id="message"></div>
 
-<input type="text" placeholder="Prénom">
-
-<input type="tel" placeholder="Téléphone">
-
-<input type="email" placeholder="Email">
-
-<input type="password" placeholder="Mot de passe">
-
-<select>
-<option>IA</option>
-<option>GL</option>
-<option>IM</option>
-<option>SI</option>
-<option>SE&IoT</option>
-</select>
-
-<div class="form-group">
-                <label>Niveau d'étude </label>
-                <select id="niveau">
-                    <option value="">-- Choisir --</option>
-                    <option>Licence 1</option>
-                    <option>Licence 2</option>
-                    <option>Licence 3</option>
-                    <option>Master 1</option>
-                    <option>Master 2</option>
-                </select>
-</div>            
-<button type="submit">
-Créer un compte
-</button>
-
-</form>
-
+        <p class="login-link">
+            Déjà un compte ? <a href="/login">Se connecter</a>
+        </p>
+    </form>
 </div>
+
+<script>
+    // ============================================
+    // GESTION DES COMPÉTENCES (TAGS BLEUS)
+    // ============================================
+    function ajouterCompetence() {
+        const input = document.getElementById('inputCompetence');
+        const val = input.value.trim();
+        if (!val) return;
+        ajouterTag('tagsCompetences', val, false);
+        input.value = '';
+        input.focus();
+    }
+
+    // ============================================
+    // GESTION DES LACUNES (TAGS ROUGES)
+    // ============================================
+    function ajouterLacune() {
+        const input = document.getElementById('inputLacune');
+        const val = input.value.trim();
+        if (!val) return;
+        ajouterTag('tagsLacunes', val, true);
+        input.value = '';
+        input.focus();
+    }
+
+    // ============================================
+    // FONCTION COMMUNE POUR AJOUTER UN TAG
+    // ============================================
+    function ajouterTag(containerId, valeur, isLacune) {
+        const container = document.getElementById(containerId);
+        
+        // Vérifier si le tag existe déjà
+        const existing = Array.from(container.querySelectorAll('.tag')).map(t => 
+            t.childNodes[0].textContent.trim()
+        );
+        if (existing.includes(valeur)) return;
+
+        const tag = document.createElement('div');
+        tag.className = 'tag' + (isLacune ? ' lacune' : '');
+        tag.innerHTML = valeur + ' <span class="x" onclick="this.parentElement.remove()">×</span>';
+        container.appendChild(tag);
+    }
+
+    // ============================================
+    // RÉCUPÉRER LES TAGS
+    // ============================================
+    function recupererTags(containerId) {
+        return Array.from(document.querySelectorAll('#' + containerId + ' .tag'))
+            .map(t => t.childNodes[0].textContent.trim());
+    }
+
+    // ============================================
+    // ENTRÉE POUR AJOUTER RAPIDEMENT
+    // ============================================
+    document.getElementById('inputCompetence').addEventListener('keypress', e => {
+        if (e.key === 'Enter') { e.preventDefault(); ajouterCompetence(); }
+    });
+    document.getElementById('inputLacune').addEventListener('keypress', e => {
+        if (e.key === 'Enter') { e.preventDefault(); ajouterLacune(); }
+    });
+
+    // ============================================
+    // SOUMISSION DU FORMULAIRE
+    // ============================================
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btn = document.getElementById('submitBtn');
+        const message = document.getElementById('message');
+        
+        const data = {
+            nom: document.getElementById('nom').value.trim(),
+            prenom: document.getElementById('prenom').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            password: document.getElementById('password').value,
+            role: "etudiant",
+            filiere: document.getElementById('filiere').value,
+            niveau: document.getElementById('niveau').value,
+            competences: recupererTags('tagsCompetences'),
+            lacunes: recupererTags('tagsLacunes')
+        };
+
+        // Validation
+        if (!data.nom || !data.prenom || !data.email || !data.password) {
+            showMessage('❌ Veuillez remplir tous les champs obligatoires', 'error');
+            return;
+        }
+        if (data.password.length < 8) {
+            showMessage('❌ Le mot de passe doit faire au moins 8 caractères', 'error');
+            return;
+        }
+        if (!data.filiere || !data.niveau) {
+            showMessage('❌ Veuillez choisir une filière et un niveau', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = '⏳ Création du compte...';
+        message.style.display = 'none';
+
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showMessage('✅ Compte créé avec succès ! Redirection...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+            } else {
+                showMessage('❌ ' + (result.message || 'Erreur lors de l\'inscription'), 'error');
+                btn.disabled = false;
+                btn.textContent = '✅ Créer mon compte';
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            showMessage('❌ Impossible de contacter le serveur', 'error');
+            btn.disabled = false;
+            btn.textContent = '✅ Créer mon compte';
+        }
+    });
+
+    function showMessage(text, type) {
+        const message = document.getElementById('message');
+        message.textContent = text;
+        message.className = 'message ' + type;
+        message.style.display = 'block';
+    }
+</script>
 
 </body>
 </html>

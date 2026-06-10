@@ -1,32 +1,192 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Connexion</title>
-<link rel="stylesheet" href="../static/css/login .css">
+    <meta charset="UTF-8">
+    <title>Connexion - MentorLink</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 10px 40px rgba(13, 110, 253, 0.15);
+        }
+        .login-card h1 {
+            text-align: center;
+            color: #0d6efd;
+            margin-bottom: 8px;
+            font-size: 1.8rem;
+        }
+        .login-card .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #084298;
+            margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e3f2fd;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .form-group input:focus {
+            border-color: #0d6efd;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+        }
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(13, 110, 253, 0.4);
+        }
+        .login-btn:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+        .message {
+            display: none;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .register-link a {
+            color: #0d6efd;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="card">
-
-<h2>Connexion</h2>
-
-<form>
-
-<input type="email"
-placeholder="Email">
-
-<input type="password"
-placeholder="Mot de passe">
-
-<button type="submit">
-Se connecter
-</button>
-
-</form>
-
+<div class="login-card">
+    <h1>🎓 MentorLink</h1>
+    <p class="subtitle">Connectez-vous à votre espace</p>
+    
+    <form id="loginForm">
+        <div class="form-group">
+            <label>📧 Email</label>
+            <input type="email" id="email" placeholder="votre@email.com" required>
+        </div>
+        <div class="form-group">
+            <label>🔒 Mot de passe</label>
+            <input type="password" id="password" placeholder="Votre mot de passe" required>
+        </div>
+        <button type="submit" class="login-btn" id="loginBtn">Se connecter</button>
+    </form>
+    
+    <div class="message" id="message"></div>
+    
+    <p class="register-link">
+        Pas encore de compte ? <a href="/register">S'inscrire</a>
+    </p>
 </div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btn = document.getElementById('loginBtn');
+        const message = document.getElementById('message');
+        
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        
+        if (!email || !password) {
+            showMessage('Veuillez remplir tous les champs', 'error');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = '⏳ Connexion...';
+        message.style.display = 'none';
+        
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ email, password })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                showMessage('✅ Connexion réussie ! Redirection...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/profile';
+                }, 1000);
+            } else {
+                showMessage('❌ ' + (data.message || 'Identifiants incorrects'), 'error');
+                btn.disabled = false;
+                btn.textContent = 'Se connecter';
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            showMessage('❌ Impossible de contacter le serveur', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Se connecter';
+        }
+    });
+    
+    function showMessage(text, type) {
+        const message = document.getElementById('message');
+        message.textContent = text;
+        message.className = 'message ' + type;
+        message.style.display = 'block';
+    }
+</script>
 
 </body>
 </html>

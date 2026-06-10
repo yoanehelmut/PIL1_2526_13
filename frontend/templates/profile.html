@@ -3,252 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <title>Mon Profil - MentorLink</title>
-    <link rel="stylesheet" href="../static/css/style .css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        .profil-container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
-
-        .profil-header {
-            background: white;
+        .profile-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .profile-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
             border-radius: 16px;
             padding: 30px;
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            margin-bottom: 24px;
-        }
-
-        .photo-wrapper {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            flex-shrink: 0;
-        }
-
-        .photo-wrapper img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #0d6efd;
-        }
-
-        .photo-placeholder {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: #e9ecef;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            border: 3px solid #0d6efd;
-        }
-
-        .photo-edit-btn {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            background: #0d6efd;
             color: white;
-            border: none;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .avatar {
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            font-size: 14px;
-            cursor: pointer;
+            background: rgba(255,255,255,0.3);
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 45px;
+            margin: 0 auto 15px;
+            border: 3px solid white;
         }
-
-        .profil-info h2 {
-            margin: 0 0 6px;
-            font-size: 1.5rem;
-            color: #1a1a2e;
+        .profile-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
         }
-
-        .profil-info p {
-            margin: 0;
-            color: #666;
-            font-size: 0.95rem;
+        .profile-header p {
+            opacity: 0.95;
+            margin-bottom: 8px;
         }
-
-        .badge-filiere {
-            display: inline-block;
-            background: #e7f0ff;
-            color: #0d6efd;
-            border-radius: 20px;
-            padding: 3px 12px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-top: 8px;
+        .badges {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
         }
-
+        .badge {
+            background: rgba(255,255,255,0.25);
+            padding: 5px 14px;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
         .section-card {
             background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border-radius: 14px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.08);
             margin-bottom: 20px;
         }
-
-        .section-card h3 {
-            margin: 0 0 18px;
-            font-size: 1.1rem;
-            color: #1a1a2e;
-            border-bottom: 2px solid #f0f0f0;
+        .section-card h2 {
+            color: #0d6efd;
+            font-size: 1.15rem;
+            margin-bottom: 18px;
             padding-bottom: 10px;
+            border-bottom: 2px solid #e3f2fd;
         }
-
-        .form-row {
+        .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 15px;
         }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+        .info-item label {
+            display: block;
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            font-weight: 600;
         }
-
-        .form-group label {
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: #444;
+        .info-item .value {
+            font-size: 1rem;
+            color: #1a1a2e;
+            font-weight: 600;
         }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-family: Arial;
-            box-sizing: border-box;
-            margin: 0;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            border-color: #0d6efd;
-            outline: none;
-        }
-
         .tags-container {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             margin-top: 10px;
         }
-
         .tag {
-            background: #e7f0ff;
-            color: #0d6efd;
-            border-radius: 20px;
-            padding: 5px 14px;
+            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 16px;
             font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
-
-        .tag.rouge {
-            background: #fde8e8;
-            color: #dc3545;
+        .tag.lacune {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
         }
-
-        .tag span.close {
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .tag-input-row {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .tag-input-row input {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-family: Arial;
-            margin: 0;
-            width: auto;
-        }
-
-        .tag-input-row button {
-            background: #0d6efd;
+        .edit-btn {
+            background: rgba(255,255,255,0.2);
             color: white;
             border: none;
-            border-radius: 8px;
             padding: 8px 16px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 0.9rem;
-            width: auto;
+            margin-top: 15px;
+            transition: all 0.3s;
         }
-
-        .disponibilites-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-            margin-top: 10px;
+        .edit-btn:hover {
+            background: rgba(255,255,255,0.35);
         }
-
-        .dispo-day {
+        .empty-state {
+            color: #999;
+            font-style: italic;
+            padding: 15px;
             text-align: center;
         }
-
-        .dispo-day label {
+        
+        /* MODE ÉDITION */
+        .edit-mode .info-value {
+            display: none;
+        }
+        .edit-mode .edit-input {
             display: block;
-            font-size: 0.75rem;
-            color: #666;
-            margin-bottom: 4px;
         }
-
-        .dispo-day input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
+        .edit-input {
+            display: none;
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #0d6efd;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-top: 4px;
+        }
+        .edit-input select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #0d6efd;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
             cursor: pointer;
-            margin: 0;
-            padding: 0;
         }
-
-        .save-btn {
+        .role-selector {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #e3f2fd;
+        }
+        .role-selector label {
+            display: block;
+            font-weight: 600;
+            color: #0d6efd;
+            margin-bottom: 8px;
+        }
+        .role-options {
+            display: flex;
+            gap: 15px;
+        }
+        .role-option {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e3f2fd;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .role-option:hover {
+            border-color: #0d6efd;
+            background: #f0f7ff;
+        }
+        .role-option.selected {
+            border-color: #0d6efd;
             background: #0d6efd;
+            color: white;
+        }
+        .role-option input {
+            display: none;
+        }
+        .save-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            display: none;
+        }
+        .edit-mode .save-btn {
+            display: block;
+        }
+        .cancel-btn {
+            background: #6c757d;
             color: white;
             border: none;
             padding: 12px 30px;
             border-radius: 10px;
             font-size: 1rem;
             cursor: pointer;
+            margin-top: 10px;
             width: 100%;
-            margin-top: 10px;
-            transition: background 0.2s;
-        }
-
-        .save-btn:hover { background: #0b5ed7; }
-
-        .success-msg {
             display: none;
-            background: #d4edda;
-            color: #155724;
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-            margin-top: 10px;
+        }
+        .edit-mode .cancel-btn {
+            display: block;
+        }
+        @media (max-width: 600px) {
+            .info-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -257,174 +231,273 @@
 <nav>
     <h1 class="logo">MentorLink🎓</h1>
     <div style="margin-top:15px">
-        <a class="btn" href="../templates/offers.html">Offres</a>
-        <a class="btn" href="../templates/matching.html">Matching</a>
-        <a class="btn" href="../templates/chat.html">Messages</a>
+        <a class="btn" href="/offers">Offres</a>
+        <a class="btn" href="/matching">Matching</a>
+        <a class="btn" href="/chat">Messages</a>
+        <button class="btn" onclick="deconnexion()" style="background:#dc3545;border:none;cursor:pointer">Déconnexion</button>
     </div>
 </nav>
 
-<div class="profil-container">
-
-    <!-- En-tête profil -->
-    <div class="profil-header">
-        <div class="photo-wrapper">
-            <div class="photo-placeholder">👤</div>
-            <button class="photo-edit-btn" onclick="document.getElementById('photoInput').click()">✏️</button>
-            <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="previewPhoto(event)">
+<div class="profile-container" id="profileContainer">
+    <!-- En-tête Profil -->
+    <div class="profile-header">
+        <div class="avatar" id="avatar">👤</div>
+        <h1 id="fullName">Nom Prénom</h1>
+        <p id="email">email@exemple.com</p>
+        <div class="badges">
+            <span class="badge" id="roleBadge">Étudiant</span>
+            <span class="badge" id="filiereBadge">Filière</span>
+            <span class="badge" id="niveauBadge">Niveau</span>
         </div>
-        <div class="profil-info">
-            <h2 id="displayNom">Nom Prénom</h2>
-            <p id="displayEmail">email@etudiant.ifri.com</p>
-            <span class="badge-filiere" id="displayFiliere">Filière</span>
+        <button class="edit-btn" onclick="toggleEdit()">✏️ Modifier</button>
+    </div>
+
+    <!-- Sélecteur de rôle (visible en mode édition) -->
+    <div class="section-card role-selector" id="roleSelector" style="display:none">
+        <label>🎯 Je suis :</label>
+        <div class="role-options">
+            <div class="role-option" onclick="selectRole('etudiant', this)">
+                <input type="radio" name="role" value="etudiant" id="roleEtudiant">
+                <div style="font-size:2rem;margin-bottom:5px">📚</div>
+                <div style="font-weight:600">Étudiant</div>
+                <div style="font-size:0.85rem;opacity:0.8;margin-top:5px">Je cherche un mentor</div>
+            </div>
+            <div class="role-option" onclick="selectRole('mentor', this)">
+                <input type="radio" name="role" value="mentor" id="roleMentor">
+                <div style="font-size:2rem;margin-bottom:5px">🎓</div>
+                <div style="font-weight:600">Mentor</div>
+                <div style="font-size:0.85rem;opacity:0.8;margin-top:5px">Je propose mon aide</div>
+            </div>
         </div>
     </div>
 
-    <!-- Infos personnelles -->
+    <!-- Informations Personnelles -->
     <div class="section-card">
-        <h3>📋 Informations personnelles</h3>
-        <div class="form-row">
-            <div class="form-group">
-                <label>Nom</label>
-                <input type="text" id="nom" placeholder="Votre nom" oninput="updateDisplay()">
+        <h2>📋 Informations Personnelles</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <label>Nom Complet</label>
+                <div class="info-value" id="infoNom">-</div>
+                <input type="text" class="edit-input" id="editNom" placeholder="Votre nom">
             </div>
-            <div class="form-group">
-                <label>Prénom</label>
-                <input type="text" id="prenom" placeholder="Votre prénom" oninput="updateDisplay()">
-            </div>
-            <div class="form-group">
+            <div class="info-item">
                 <label>Email</label>
-                <input type="email" id="email" placeholder="email@exemple.com" oninput="updateDisplay()">
+                <div class="info-value" id="infoEmail">-</div>
+                <input type="email" class="edit-input" id="editEmail" placeholder="email@exemple.com">
             </div>
-            <div class="form-group">
-                <label>Téléphone</label>
-                <input type="tel" id="telephone" placeholder="+229 XX XX XX XX">
-            </div>
-            <div class="form-group">
+            <div class="info-item">
                 <label>Filière</label>
-                <select id="filiere" onchange="updateDisplay()">
+                <div class="info-value" id="infoFiliere">-</div>
+                <select class="edit-input" id="editFiliere">
                     <option value="">-- Choisir --</option>
-                    <option>IA</option>
-                    <option>IM</option>
-                    <option>GL</option>
-                    <option>SE&IoT</option>
-                    <option>SI</option>
+                    <option value="IA">IA</option>
+                    <option value="IM">IM</option>
+                    <option value="GL">GL</option>
+                    <option value="SE&IoT">SE&IoT</option>
+                    <option value="SI">SI</option>
                 </select>
             </div>
-            <div class="form-group">
+            <div class="info-item">
                 <label>Niveau</label>
-                <select id="niveau">
+                <div class="info-value" id="infoNiveau">-</div>
+                <select class="edit-input" id="editNiveau">
                     <option value="">-- Choisir --</option>
-                    <option>Licence 1</option>
-                    <option>Licence 2</option>
-                    <option>Licence 3</option>
-                    <option>Master 1</option>
-                    <option>Master 2</option>
+                    <option value="L1">Licence 1</option>
+                    <option value="L2">Licence 2</option>
+                    <option value="L3">Licence 3</option>
+                    <option value="M1">Master 1</option>
+                    <option value="M2">Master 2</option>
                 </select>
             </div>
         </div>
-        <div class="form-group" style="margin-top:16px">
-            <label>Bio courte</label>
-            <textarea id="bio" rows="3" placeholder="Parlez un peu de vous, vos centres d'intérêt académiques..."></textarea>
-        </div>
     </div>
 
-    <!-- Points forts -->
+    <!-- Compétences -->
     <div class="section-card">
-        <h3>💪 Points forts (compétences)</h3>
-        <div class="tags-container" id="tagsForts"></div>
-        <div class="tag-input-row">
-            <input type="text" id="inputFort" placeholder="Ex: Algorithmique, Python...">
-            <button onclick="ajouterTag('fort')">+ Ajouter</button>
+        <h2>💪 Mes Compétences</h2>
+        <div class="tags-container" id="competencesDisplay">
+            <div class="empty-state">Aucune compétence</div>
         </div>
     </div>
 
-    <!-- Points faibles -->
+    <!-- Lacunes -->
     <div class="section-card">
-        <h3>📚 Points faibles (besoin d'aide)</h3>
-        <div class="tags-container" id="tagsFaibles"></div>
-        <div class="tag-input-row">
-            <input type="text" id="inputFaible" placeholder="Ex: Base de données, Réseau...">
-            <button onclick="ajouterTag('faible')">+ Ajouter</button>
+        <h2>📚 Mes Lacunes</h2>
+        <div class="tags-container" id="lacunesDisplay">
+            <div class="empty-state">Aucune lacune</div>
         </div>
     </div>
 
-    <!-- Disponibilités -->
-    <div class="section-card">
-        <h3>🕐 Disponibilités</h3>
-        <div class="disponibilites-grid">
-            <div class="dispo-day"><label>Lun</label><input type="checkbox" id="lun"></div>
-            <div class="dispo-day"><label>Mar</label><input type="checkbox" id="mar"></div>
-            <div class="dispo-day"><label>Mer</label><input type="checkbox" id="mer"></div>
-            <div class="dispo-day"><label>Jeu</label><input type="checkbox" id="jeu"></div>
-            <div class="dispo-day"><label>Ven</label><input type="checkbox" id="ven"></div>
-            <div class="dispo-day"><label>Sam</label><input type="checkbox" id="sam"></div>
-            <div class="dispo-day"><label>Dim</label><input type="checkbox" id="dim"></div>
-        </div>
-        <div class="form-row" style="margin-top:16px">
-            <div class="form-group">
-                <label>Heure début</label>
-                <input type="time" id="heureDebut">
-            </div>
-            <div class="form-group">
-                <label>Heure fin</label>
-                <input type="time" id="heureFin">
-            </div>
-        </div>
-    </div>
-
-    <button class="save-btn" onclick="sauvegarder()">💾 Sauvegarder le profil</button>
-    <div class="success-msg" id="successMsg">✅ Profil mis à jour avec succès !</div>
-
+    <!-- Boutons Sauvegarder/Annuler -->
+    <button class="save-btn" onclick="saveProfile()">💾 Sauvegarder les modifications</button>
+    <button class="cancel-btn" onclick="cancelEdit()">❌ Annuler</button>
 </div>
 
 <script>
-    function updateDisplay() {
-        const nom = document.getElementById('nom').value;
-        const prenom = document.getElementById('prenom').value;
-        const email = document.getElementById('email').value;
-        const filiere = document.getElementById('filiere').value;
-        if (nom || prenom) document.getElementById('displayNom').textContent = prenom + ' ' + nom;
-        if (email) document.getElementById('displayEmail').textContent = email;
-        if (filiere) document.getElementById('displayFiliere').textContent = filiere;
+    let isEditMode = false;
+    let currentUser = null;
+
+    document.addEventListener('DOMContentLoaded', chargerProfil);
+
+    async function chargerProfil() {
+        try {
+            const response = await fetch('/api/profile', {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (response.status === 401) {
+                alert('Session expirée. Veuillez vous reconnecter.');
+                window.location.href = '/login';
+                return;
+            }
+
+            if (!response.ok) throw new Error('Erreur');
+
+            currentUser = await response.json();
+
+            // En-tête
+            const fullName = (currentUser.prenom || '') + ' ' + (currentUser.nom || '');
+            document.getElementById('fullName').textContent = fullName.trim();
+            document.getElementById('email').textContent = currentUser.email || '';
+            document.getElementById('filiereBadge').textContent = currentUser.filiere || '';
+            document.getElementById('niveauBadge').textContent = currentUser.niveau || '';
+            
+            const roleText = currentUser.role === 'mentor' ? 'Mentor 🎓' : 'Étudiant 📚';
+            document.getElementById('roleBadge').textContent = roleText;
+            
+            const initials = ((currentUser.prenom || '').charAt(0) + (currentUser.nom || '').charAt(0)).toUpperCase();
+            if (initials) document.getElementById('avatar').textContent = initials;
+
+            // Infos
+            document.getElementById('infoNom').textContent = fullName.trim();
+            document.getElementById('infoEmail').textContent = currentUser.email;
+            document.getElementById('infoFiliere').textContent = currentUser.filiere || '-';
+            document.getElementById('infoNiveau').textContent = currentUser.niveau || '-';
+
+            // Compétences
+            const compContainer = document.getElementById('competencesDisplay');
+            if (currentUser.competences && currentUser.competences.length > 0) {
+                compContainer.innerHTML = currentUser.competences.map(c => 
+                    `<span class="tag">${c}</span>`
+                ).join('');
+            }
+
+            // Lacunes
+            const lacContainer = document.getElementById('lacunesDisplay');
+            if (currentUser.lacunes && currentUser.lacunes.length > 0) {
+                lacContainer.innerHTML = currentUser.lacunes.map(l => 
+                    `<span class="tag lacune">${l}</span>`
+                ).join('');
+            }
+
+            // Pré-remplir les champs d'édition
+            document.getElementById('editNom').value = currentUser.nom || '';
+            document.getElementById('editEmail').value = currentUser.email || '';
+            document.getElementById('editFiliere').value = currentUser.filiere || '';
+            document.getElementById('editNiveau').value = currentUser.niveau || '';
+
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Erreur de chargement du profil');
+        }
     }
 
-    function ajouterTag(type) {
-        const inputId = type === 'fort' ? 'inputFort' : 'inputFaible';
-        const containerId = type === 'fort' ? 'tagsForts' : 'tagsFaibles';
-        const input = document.getElementById(inputId);
-        const val = input.value.trim();
-        if (!val) return;
-
-        const container = document.getElementById(containerId);
-        const tag = document.createElement('div');
-        tag.className = 'tag' + (type === 'faible' ? ' rouge' : '');
-        tag.innerHTML = val + ' <span class="close" onclick="this.parentElement.remove()">×</span>';
-        container.appendChild(tag);
-        input.value = '';
+    function toggleEdit() {
+        isEditMode = !isEditMode;
+        const container = document.getElementById('profileContainer');
+        const roleSelector = document.getElementById('roleSelector');
+        
+        if (isEditMode) {
+            container.classList.add('edit-mode');
+            roleSelector.style.display = 'block';
+            
+            // Sélectionner le rôle actuel
+            const currentRole = currentUser.role || 'etudiant';
+            const roleOption = document.querySelector(`.role-option[onclick*="${currentRole}"]`);
+            if (roleOption) {
+                selectRole(currentRole, roleOption);
+            }
+        } else {
+            container.classList.remove('edit-mode');
+            roleSelector.style.display = 'none';
+        }
     }
 
-    document.getElementById('inputFort').addEventListener('keypress', e => { if(e.key==='Enter') ajouterTag('fort'); });
-    document.getElementById('inputFaible').addEventListener('keypress', e => { if(e.key==='Enter') ajouterTag('faible'); });
-
-    function previewPhoto(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = e => {
-            const wrapper = document.querySelector('.photo-wrapper');
-            wrapper.querySelector('.photo-placeholder').style.display = 'none';
-            let img = wrapper.querySelector('img.preview');
-            if (!img) { img = document.createElement('img'); img.className = 'preview'; wrapper.insertBefore(img, wrapper.firstChild); }
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
+    function selectRole(role, element) {
+        // Retirer la sélection de tous
+        document.querySelectorAll('.role-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        
+        // Ajouter la sélection à l'élément cliqué
+        element.classList.add('selected');
+        
+        // Cocher le radio button
+        const radio = element.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
     }
 
-    function sauvegarder() {
-        const msg = document.getElementById('successMsg');
-        msg.style.display = 'block';
-        setTimeout(() => msg.style.display = 'none', 3000);
+    async function saveProfile() {
+        const nom = document.getElementById('editNom').value.trim();
+        const prenom = document.getElementById('editPrenom') ? document.getElementById('editPrenom').value.trim() : nom.split(' ')[0];
+        const email = document.getElementById('editEmail').value.trim();
+        const filiere = document.getElementById('editFiliere').value;
+        const niveau = document.getElementById('editNiveau').value;
+        
+        // Récupérer le rôle sélectionné
+        const selectedRole = document.querySelector('input[name="role"]:checked');
+        const role = selectedRole ? selectedRole.value : 'etudiant';
+
+        if (!nom || !prenom || !email) {
+            alert('Veuillez remplir tous les champs obligatoires');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    nom: nom,
+                    prenom: prenom,
+                    email: email,
+                    filiere: filiere,
+                    niveau: niveau,
+                    role: role
+                })
+            });
+
+            if (response.ok) {
+                alert('✅ Profil mis à jour avec succès !');
+                toggleEdit();
+                await chargerProfil();
+            } else {
+                const error = await response.json();
+                alert('❌ Erreur: ' + (error.message || 'Impossible de sauvegarder'));
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('❌ Erreur de connexion au serveur');
+        }
+    }
+
+    function cancelEdit() {
+        toggleEdit();
+        chargerProfil(); // Recharger les données originales
+    }
+
+    async function deconnexion() {
+        if (!confirm('Voulez-vous vous déconnecter ?')) return;
+        try {
+            await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+        } catch (e) {}
+        window.location.href = '/login';
     }
 </script>
+
 </body>
 </html>
