@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exposé Technique Intégral - Projet Intégrateur IFRI_MentorLink</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            color: #2b2d42;
+            background-color: #f4f6f9;
+            line-height: 1.7;
+        }
+        .navbar-brand {
+            font-weight: 800;
+            color: #1d3557 !important;
+            letter-spacing: 0.5px;
+        }
+        .academic-header {
+            background: linear-gradient(145deg, #1d3557 0%, #457b9d 100%);
+            color: #f1faee;
+            padding: 80px 0;
+            margin-bottom: 50px;
+            box-shadow: inset 0 -5px 15px rgba(0,0,0,0.1);
+        }
+        .card-academic {
+            border: 1px solid #e1e5eb;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            margin-bottom: 40px;
+            background-color: #ffffff;
+        }
+        .card-header-academic {
+            background-color: #f8f9fa;
+            color: #1d3557;
+            font-weight: 700;
+            border-bottom: 2px solid #1d3557;
+            padding: 18px 24px;
+            font-size: 1.25rem;
+        }
+        .card-body-academic {
+            padding: 30px;
+        }
+        .formula-panel {
+            background-color: #f1faee;
+            border-left: 5px solid #e63946;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .technical-badge {
+            background-color: #e1edf7;
+            color: #1d3557;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-family: monospace;
+            font-weight: 600;
+        }
+        .validation-panel {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 6px;
+        }
+        .table-academic th {
+            background-color: #1d3557;
+            color: #ffffff;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        .table-academic td {
+            font-size: 0.95rem;
+        }
+        pre {
+            background-color: #1d3557;
+            color: #f1faee;
+            padding: 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        h3 {
+            color: #457b9d;
+            font-weight: 600;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.15rem;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 5px;
+        }
+        p {
+            text-align: justify;
+            margin-bottom: 1.5rem;
+        }
+        .critical-note {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-note {
+            background-color: #e8f4fd;
+            border-left: 5px solid #457b9d;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+        .success-note {
+            background-color: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+        .contribution-badge {
+            display: inline-block;
+            background-color: #1d3557;
+            color: #f1faee;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+            margin-left: 8px;
+            vertical-align: middle;
+            letter-spacing: 0.4px;
+        }
+    </style>
+
+    <!-- Script de rendu mathématique LaTeX (MathJax) -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+    <!-- NAVIGATION ACADÉMIQUE -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">MÉMOIRE TECHNIQUE : IFRI_MentorLink</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#academicNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="academicNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#introduction">Introduction</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#organisation">Organisation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#architecture">Architecture</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#modelisation">Données</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#algorithme">Algorithmique</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#deploiement">Déploiement</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#validation">Validation</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- EN-TÊTE DU RAPPORT -->
+    <header class="academic-header" id="introduction">
+        <div class="container text-center">
+            <span class="text-uppercase tracking-widest d-block mb-2" style="letter-spacing: 3px; font-size: 0.95rem; font-weight: 300;">République du Bénin</span>
+            <h5 class="fw-normal mb-1">UNIVERSITÉ D'ABOMEY-CALAVI (UAC)</h5>
+            <h5 class="fw-bold mb-4">INSTITUT DE FORMATION ET DE RECHERCHE EN INFORMATIQUE (IFRI)</h5>
+            <hr class="mx-auto my-4 bg-light" style="width: 80px; height: 3px; opacity: 0.8;">
+            <h1 class="display-5 fw-bold text-uppercase mb-3">Rapport de Projet Intégrateur de Fin d'Année</h1>
+            <h2 class="h3 fw-light opacity-85 mb-4">Conception et Implémentation Distribuée de la Plateforme Globale de Mentorat Dynamique : IFRI_MentorLink</h2>
+            <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
+                <span class="badge bg-danger px-3 py-2 fs-6">Projet : Juin 2026</span>
+                <span class="badge bg-secondary px-3 py-2 fs-6">Groupe Académique : 13</span>
+            </div>
+            <div class="mt-4 pt-3" style="border-top: 1px solid rgba(255,255,255,0.25);">
+                <p class="mb-1" style="font-size: 0.9rem; opacity: 0.85;">
+                    <strong>Rédaction du présent rapport :</strong> DA SILVEIRA Rinaldi Grâce Lacouélé
+                </p>
+                <p class="mb-0" style="font-size: 0.9rem; opacity: 0.85;">
+                    <strong>Rédaction du README technique :</strong> TCHIAKPE Raphaël
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- SECTION 1 : INTRODUCTION EXTENSO -->
+        <section class="mb-5">
+            <div class="card card-academic">
+                <div class="card-header-academic">1. Contexte Institutionnel, Problématique et Objectifs Stratégiques</div>
+                <div class="card-body-academic">
+                    <p>L'évolution des cursus universitaires technologiques au sein de l'Institut de Formation et de Recherche en Informatique (IFRI) impose une assimilation rapide de compétences denses et hétérogènes, allant de l'intelligence artificielle au génie logiciel. Face à la disparité des niveaux initiaux des apprenants et à l'absence d'un canal institutionnel dédié à la transmission horizontale des savoirs, l'isolement académique constitue un facteur de risque majeur. Les structures d'encadrement traditionnelles, portées exclusivement par le corps enseignant, font face à des limites structurelles de disponibilité.</p>
+                    <p>Le projet <strong>IFRI_MentorLink</strong> s'inscrit comme une solution d'ingénierie collaborative visant à combler cette rupture computationnelle et sociale. L'objectif scientifique et technique consiste à concevoir une architecture logicielle découplée capable de modéliser, classifier et faire correspondre en temps réel les compétences spécifiques des étudiants de l'institut. La plateforme ne se limite pas à un simple annuaire ; elle orchestre un écosystème transactionnel complet incluant la gestion fine de profils asymétriques (Mentors et Mentorés), la publication d'offres et requêtes de compétences, le calcul déterministe d'affinités pédagogiques et une infrastructure d'échange à faible latence.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2 : GESTION DE PROJET & RÉPARTITION -->
+        <section class="mb-5" id="organisation">
+            <div class="card card-academic">
+                <div class="card-header-academic">2. Modèle d'Organisation Équipe et Matrice Nominale de Répartition Analytique (7 Membres)</div>
+                <div class="card-body-academic">
+                    <p>Compte tenu de l'envergure fonctionnelle et de la contrainte temporelle stricte imposée par le cahier des charges, l'équipe du <strong>Groupe 13</strong> s'est structurée selon une répartition claire et nominale de ses membres, s'appuyant directement sur les contributions effectives validées au sein du dépôt de versioning.</p>
+
+                    <!-- NOTE TECHNIQUE : ANOMALIE COMMIT DHOSSOU -->
+                    <div class="info-note">
+                        <strong>⚠️ Note Technique — Anomalie d'Identité sur le Dépôt Git :</strong> En raison d'un problème technique de configuration locale de Git (absence du paramétrage global <code>user.name</code> et <code>user.email</code>), les commits réalisés par <strong>DHOSSOU Harael Heureux</strong> apparaissent dans l'historique du dépôt sous l'identité <strong><code>unknown</code></strong> plutôt que sous son nom réel. Cette anomalie est purement technique et ne remet nullement en cause la réalité de ses contributions, documentées et vérifiables via le contenu des modifications apportées aux fichiers du projet.
+                    </div>
+
+                    <!-- NOTE TECHNIQUE : AGBODOYETIN Neriad -->
+                    <div class="success-note">
+                        <strong>✅ Note de Clôture Technique :</strong> <strong>AGBODOYETIN Neriad</strong> a effectué les dernières modifications et ajustements finaux apportés au projet, assurant ainsi la livraison dans un état stable et conforme aux exigences du cahier des charges institutionnel.
+                    </div>
+
+                    <div class="table-responsive my-4">
+                        <table class="table table-bordered table-academic align-middle text-center">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">Identité du Concepteur</th>
+                                    <th style="width: 30%;">Périmètre Fonctionnel de Spécialisation</th>
+                                    <th style="width: 45%;">Livrables Techniques Quantifiables (Checklist Officielle)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <strong>Rinaldi Grâce Lacouélé DA SILVEIRA</strong>
+                                        <span class="contribution-badge">Rapport</span>
+                                    </td>
+                                    <td class="text-start">Direction de projet, administration Git, architecture globale, routage de la messagerie en temps réel, co-optimisation des bases de données. <strong>Rédaction intégrale du présent rapport technique.</strong></td>
+                                    <td class="text-start">Résolution des conflits majeurs, fusions de branches (<code class="text-primary">rinaldi-messagerie</code>), implémentation de Flask-SocketIO pour le chat et collaboration sur la création des index de requêtes SQL fréquents. Rédaction et mise en forme du rapport de projet final.</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Harael Heureux DHOSSOU</strong>
+                                        <br><small class="text-muted fst-italic">(commits enregistrés sous <code>unknown</code> — voir note technique ci-dessus)</small>
+                                    </td>
+                                    <td class="text-start">Ingénierie de l'appariement automatique, architecture logique des flux d'annonces (offres/demandes) et optimisation des performances de données.</td>
+                                    <td class="text-start">Conception de la structure des offres et demandes (Étapes 1-2). Exposition de l'algorithme via l'endpoint <code class="text-primary">GET /matching/&lt;user_id&gt;</code> trié par score décroissant (Étapes 3-4), collaboration sur les index SQL et tests de charge complexes.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Victoire (Victoire08)</strong></td>
+                                    <td class="text-start">Ingénierie des flux métier, gestion des annonces de compétences et modélisation algorithmique d'appariement.</td>
+                                    <td class="text-start">Développement complet du fichier <code class="text-primary">match.py</code>, création et mise à jour dynamique des endpoints CRUD pour les offres et demandes d'assistance académique.</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>TCHIAKPE Raphaël</strong>
+                                        <span class="contribution-badge">README</span>
+                                    </td>
+                                    <td class="text-start">Développement backend Core, sécurisation des accès, refactoring structurel de l'application, nettoyage des modèles et <strong>rédaction du fichier README technique du projet.</strong></td>
+                                    <td class="text-start">Élaboration du script d'authentification initial (<code class="text-primary">auth.py</code>), ajustements et refontes de l'architecture d'accès aux routes dans <code class="text-primary">app.py</code>, gestion du fichier <code class="text-primary">offer.py</code> et rédaction complète du fichier <code class="text-primary">README.md</code> du dépôt.</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>AGBODOYETIN Neriad</strong>
+                                        <span class="contribution-badge" style="background-color: #28a745;">Clôture</span>
+                                    </td>
+                                    <td class="text-start">Administration et persistance des données de production, gestion des variables d'environnement, synchronisation SGBD et <strong>intégration des modifications finales de clôture du projet.</strong></td>
+                                    <td class="text-start">Vérification, fiabilisation et nettoyage des scripts SQL (<code class="text-primary">database.sql</code>), configuration du fichier de sécurité <code class="text-primary">.env</code>, mise à jour des variables explicites de la table utilisateur et <strong>application des dernières modifications finales apportées au projet avant livraison.</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Dossa (Dossa98)</strong></td>
+                                    <td class="text-start">Développement et optimisation des interfaces de profil utilisateur, de la messagerie interactive et du chat asynchrone.</td>
+                                    <td class="text-start">Mise à niveau et amélioration continue des fonctionnalités de <code class="text-primary">profile.py</code>, correction des modules du chat, et maintenance corrective des vues profils.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Yoane Helmut (yoanehelmut)</strong></td>
+                                    <td class="text-start">Intégration UI/UX frontend, ergonomie des templates et assemblage de la documentation technique.</td>
+                                    <td class="text-start">Élaboration de la structure globale du frontend, intégration et mise en page réactive des vues HTML et création du livrable final de synthèse.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3 : ARCHITECTURE APPLICATIVE -->
+        <section class="mb-5" id="architecture">
+            <div class="card card-academic">
+                <div class="card-header-academic">3. Analyse Détaillée de l'Architecture Système et de la Stack Technologique</div>
+                <div class="card-body-academic">
+                    <p>La solution logicielle repose sur le paradigme du découpage architectural strict entre le serveur de services (Backend API REST) et le client d'affichage (Frontend).</p>
+                    
+                    <h3>Le Socle Backend : Écosystème Python - Flask</h3>
+                    <p>Le framework micro-kernel <strong>Flask (Python)</strong> a été retenu pour sa modularité. Pour étendre ses capacités, les modules spécialisés suivants ont été configurés :</p>
+                    <ul>
+                        <li><span class="technical-badge">Flask-SQLAlchemy</span> : ORM agissant comme couche d'abstraction de données relationnelles.</li>
+                        <li><span class="technical-badge">Flask-JWT-Extended</span> : Implémentation du protocole d'authentification sans état par jetons de sécurité signés cryptographiquement.</li>
+                        <li><span class="technical-badge">Flask-SocketIO &amp; Eventlet</span> : Infrastructure réseau permettant d'assurer la gestion de la messagerie instantanée bidirectionnelle en temps réel.</li>
+                    </ul>
+
+                    <h3>La Couche Frontend : Interface Légère et Asynchrone</h3>
+                    <p>Le Frontend s'appuie sur une stack standardisée : <strong>HTML5, CSS3 et JavaScript Moderne</strong> avec des requêtes asynchrones <code class="text-dark">fetch()</code>. L'interface graphique exploite le framework <strong>Bootstrap 5</strong> importé via CDN pour garantir une compatibilité responsive complète.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4 : PERSISTANCE ET CONCEPTION BDD -->
+        <section class="mb-5" id="modelisation">
+            <div class="card card-academic">
+                <div class="card-header-academic">4. Architecture des Données, Modélisation et Spécifications Relationnelles</div>
+                <div class="card-body-academic">
+                    <p>La persistance du système d'information repose sur un SGBD relationnel structuré selon les tables fondamentales définies dans le cahier des charges de l'institut.</p>
+                    
+                    <h3>Description Technique des Entités Fondamentales</h3>
+                    <ul>
+                        <li><strong>Utilisateur :</strong> Enregistre l'état civil, les coordonnées de contact, les hachages bcrypt, la filière (<code class="text-primary">IA, IM, GL, SE_IOT, SI</code>) et le niveau d'étude.</li>
+                        <li><strong>Competence &amp; UtilisateurCompetence :</strong> Gère le dictionnaire des matières enseignées et associe les étudiants selon leur rôle (Mentor ou Mentoré).</li>
+                        <li><strong>Disponibilite :</strong> Structure temporelle découpée par jour et plages horaires.</li>
+                        <li><strong>OffreDemande :</strong> Registre centralisateur des annonces actives publiées sur le réseau.</li>
+                        <li><strong>Matching :</strong> Stocke les liaisons calculées, l'état d'acceptation mutuelle et le score de compatibilité.</li>
+                        <li><strong>Conversation &amp; Message :</strong> Infrastructure de persistance pour les salons de discussion incluant un indicateur d'état de lecture.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5 : ALGORITHME DE MATCHING -->
+        <section class="mb-5" id="algorithme">
+            <div class="card card-academic">
+                <div class="card-header-academic">5. Engineering Algorithmique : Logique Déterministe du Moteur de Matching</div>
+                <div class="card-body-academic">
+                    <p>Le moteur évalue de manière asymétrique la pertinence de l'association d'un Mentor (\(M\)) avec un Mentoré (\(m\)) via un calcul déterministe de score.</p>
+                    
+                    <h3>Formulation Mathématique du Calcul d'Affinité</h3>
+                    <p>La fonction d'évaluation attribue une note globale cumulée basée sur les règles de pondération institutionnelles :</p>
+                    
+                    <div class="formula-panel text-center fs-5">
+                        $$Score(M, m) = (|C_M \cap C_m| \times 40) + (|D_M \cap D_m| \times 30) + \alpha + \beta$$
+                    </div>
+                    
+                    <p>Où les variables et coefficients directeurs sont définis par les règles de gestion suivantes :</p>
+                    <ul>
+                        <li><strong>\(C_M \cap C_m\) (Poids : 40 points par occurrence) :</strong> Représente l'intersection de l'ensemble des compétences maîtrisées par le Mentor avec l'ensemble des compétences requises par le Mentoré.</li>
+                        <li><strong>\(D_M \cap D_m\) (Poids : 30 points par occurrence) :</strong> Représente l'intersection des fenêtres temporelles de disponibilité communes (jour et heures compatibles).</li>
+                        <li><strong>\(\alpha\) (Bonus de Filière : 20 points) :</strong> Coefficient binaire d'isomorphisme de parcours académique. \(\alpha = 20\) si \(\text{Filière}_M = \text{Filière}_m\), sinon \(\alpha = 0\).</li>
+                        <li><strong>\(\beta\) (Bonus de Proximité de Niveau : 10 points) :</strong> Coefficient d'adjacence de niveau d'étude. \(\beta = 10\) si \(|\text{Niveau}_M - \text{Niveau}_m| \le 1\), garantissant un recul suffisant mais proche du programme. Sinon \(\beta = 0\).</li>
+                    </ul>
+
+                    <div class="critical-note">
+                        <strong>Traitement Impératif des Cas Limites :</strong> Si l'intersection des compétences est vide (\(|C_M \cap C_m| = 0\)), le score final est de 0 points. L'application intercepte cette absence pour bloquer la suggestion et retourner la mention standardisée <strong>"Aucun match trouvé"</strong>.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6 : PROTOCOLE DE DÉPLOIEMENT -->
+        <section class="mb-5" id="deploiement">
+            <div class="card card-academic">
+                <div class="card-header-academic">6. Manuel d'Ingénierie Système : Protocole d'Installation et Déploiement</div>
+                <div class="card-body-academic">
+                    <p>Procédure standardisée pour le déploiement de l'application en environnement isolé.</p>
+                    
+                    <h6>Étape 1 : Isolation et clonage du dépôt officiel</h6>
+                    <pre><code>git clone https://github.com/votre-compte/PIL_2526_13.git
+cd PIL_2526_13
+python -m venv venv</code></pre>
+
+                    <h6>Étape 2 : Activation de l'environnement virtuel et chargement des dépendances</h6>
+                    <pre><code># Sous Windows
+venv\Scripts\activate
+
+# Sous Linux / macOS
+source venv/bin/activate
+
+pip install -r requirements.txt</code></pre>
+
+                    <h6>Étape 3 : Configuration d'environnement et exécution</h6>
+                    <pre><code>cp .env.example .env
+python run.py</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 7 : MANUEL ET RAPPORT DE VALIDATION -->
+        <section class="mb-5" id="validation">
+            <div class="card card-academic">
+                <div class="card-header-academic">7. Manuel d'Exploitation Fonctionnelle et Rapport de Validation Graphique</div>
+                <div class="card-body-academic">
+                    <p>Spécifications comportementales et validation de la conformité visuelle des interfaces applicatives requises par le cahier des charges de l'institut.</p>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-white shadow-sm">
+                                <h5 class="h6 fw-bold text-dark text-uppercase">A. Inscription des Utilisateurs (<code>register.html</code>)</h5>
+                                <p class="small text-muted mb-2">Champs d'état civil, validation de l'unicité des accès et contrôles côté client.</p>
+                                <div class="validation-panel small text-secondary">
+                                    <strong>Statut de conformité :</strong> Validé.<br>
+                                    <strong>Description technique :</strong> Formulaire réactif vertical intégrant la collecte sécurisée du nom, prénom, téléphone, email institutionnel, mot de passe, ainsi que la sélection dynamique de la filière et du niveau de l'étudiant.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-white shadow-sm">
+                                <h5 class="h6 fw-bold text-dark text-uppercase">B. Portail de Connexion (<code>login.html</code>)</h5>
+                                <p class="small text-muted mb-2">Écran d'accès gérant l'authentification et le stockage persistant du jeton JWT.</p>
+                                <div class="validation-panel small text-secondary">
+                                    <strong>Statut de conformité :</strong> Validé.<br>
+                                    <strong>Description technique :</strong> Interface d'identification sécurisée transmettant les informations d'authentification au backend Flask, puis stockant le jeton signé dans le stockage local du navigateur.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-white shadow-sm">
+                                <h5 class="h6 fw-bold text-dark text-uppercase">C. Profil Étudiant (<code>profile.html</code>)</h5>
+                                <p class="small text-muted mb-2">Gestion des compétences individuelles, des plages horaires et téléversement de la photo.</p>
+                                <div class="validation-panel small text-secondary">
+                                    <strong>Statut de conformité :</strong> Validé.<br>
+                                    <strong>Description technique :</strong> Espace utilisateur permettant de mettre à jour son dictionnaire personnel de compétences (matières maîtrisées ou recherchées), de configurer ses créneaux de disponibilité et de téléverser son image de profil.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-white shadow-sm">
+                                <h5 class="h6 fw-bold text-dark text-uppercase">D. Flux des Offres et Demandes (<code>offers.html</code>)</h5>
+                                <p class="small text-muted mb-2">Tableau récapitulatif des annonces actives avec filtres combinés par matière.</p>
+                                <div class="validation-panel small text-secondary">
+                                    <strong>Statut de conformité :</strong> Validé.<br>
+                                    <strong>Description technique :</strong> Catalogue dynamique affichant toutes les demandes d'assistance académique en cours, avec un module de recherche asynchrone permettant le filtrage instantané par matière.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-white shadow-sm">
+                                <h5 class="h6 fw-bold text-dark text-uppercase">E. Suggestions de Matching (<code>matching.html</code>)</h5>
+                                <p class="small text-muted mb-2">Affichage ordonné des mentors par score décroissant avec badge de compatibilité coloré.</p>
+                                <div class="validation-panel small text-secondary">
+                                    <strong>Statut de conformité :</strong> Validé.<br>
+                                    <strong>Description technique :</strong> Tableau de restitution algorithmique classant les mentors potentiels selon leur score calculé en temps réel, accompagné de badges de couleur basés sur le taux d'affinité.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-white shadow-sm">
+                                <h5 class="h6 fw-bold text-dark text-uppercase">F. Salon de Messagerie Instantanée (<code>chat.html</code>)</h5>
+                                <p class="small text-muted mb-2">Interface asynchrone bidirectionnelle gérant l'échange fluide des messages en temps réel.</p>
+                                <div class="validation-panel small text-secondary">
+                                    <strong>Statut de conformité :</strong> Validé.<br>
+                                    <strong>Description technique :</strong> Salon d'échange asynchrone propulsé par Socket.IO. Gère la liste des discussions actives sur le volet gauche et l'historique complet des messages interactifs dans la zone principale.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 8 : BILAN CRITIQUE -->
+        <section class="mb-5">
+            <div class="card card-academic">
+                <div class="card-header-academic">8. Difficultés Rencontrées, Défis d'Ingénierie et Solutions Apportées</div>
+                <div class="card-body-academic">
+                    <p>Le cycle de développement a soulevé des problématiques d'ingénierie concrètes, résolues collectivement par l'équipe :</p>
+                    
+                    <h3>1. Gestion de la Concurrence sur les Canaux WebSockets</h3>
+                    <p>Lors de l'émission simultanée de messages par plusieurs utilisateurs, des collisions d'écriture pouvaient survenir au niveau de la base de données relationnelle.</p>
+                    <p><strong>Résolution :</strong> L'implémentation de coroutines asynchrones via Eventlet combinée à la gestion isolée des transactions de l'ORM a permis de sérialiser les écritures de messages en BDD de façon atomique avant toute diffusion asynchrone.</p>
+
+                    <h3>2. Blocage des Requêtes Multi-Origines (CORS)</h3>
+                    <p>L'isolation stricte du frontend par rapport au backend API provoquait des rejets systématiques des requêtes asynchrones par les navigateurs.</p>
+                    <p><strong>Résolution :</strong> Configuration explicite de l'extension <code class="text-dark">Flask-CORS</code> sur le serveur pour surcharger les en-têtes de réponse HTTP et autoriser l'échange de jetons de sécurité.</p>
+
+                    <h3>3. Anomalie de Pseudonymisation des Commits Git (DHOSSOU Harael)</h3>
+                    <p>Un problème technique lié à l'absence de configuration globale de Git sur la machine de travail de <strong>DHOSSOU Harael Heureux</strong> a conduit à l'enregistrement de ses commits sous l'identité générique <code>unknown</code> dans l'historique du dépôt.</p>
+                    <p><strong>Résolution &amp; Clarification :</strong> Cette anomalie est d'ordre purement technique et ne reflète en aucun cas un manque de contribution. Le contenu des modifications commitées est attribuable sans ambiguïté à DHOSSOU Harael par recoupement avec les branches et les fichiers concernés. Une configuration correcte de <code>git config --global user.name</code> et <code>git config --global user.email</code> aurait prévenu ce problème.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 9 : CONCLUSION -->
+        <section class="mb-5">
+            <div class="card card-academic">
+                <div class="card-header-academic">9. Conclusion Générale et Perspectives d'Évolution</div>
+                <div class="card-body-academic">
+                    <p>Le projet intégrateur <strong>IFRI_MentorLink</strong> démontre la viabilité d'un écosystème de mentorat dynamique basé sur des choix architecturaux découplés et un algorithme déterministe. Cette expérience met en relief l'importance d'une gouvernance stricte des flux Git, d'une communication fluide au sein du groupe de 7 ingénieurs et du respect méticuleux des contraintes techniques. La solution livre des fondations logicielles solides, prêtes à évoluer vers des architectures conteneurisées ou des modèles d'appariement prédictifs.</p>
+                    <hr class="my-4">
+                    <p class="text-muted small text-end mb-0">
+                        <em>Rapport rédigé par <strong>DA SILVEIRA Rinaldi Grâce Lacouélé</strong> — Groupe 13, IFRI/UAC, Juin 2026.</em><br>
+                        <em>README technique rédigé par <strong>TCHIAKPE Raphaël</strong>.</em><br>
+                        <em>Dernières modifications du projet assurées par <strong>AGBODOYETIN Neriad</strong>.</em>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Bootstrap 5 JavaScript Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
